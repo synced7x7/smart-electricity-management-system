@@ -1,0 +1,3 @@
+info:
+  config-source: config-server
+  service: payment-service
