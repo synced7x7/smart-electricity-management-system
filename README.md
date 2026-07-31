@@ -214,6 +214,49 @@ smart-electricity-management/
 
 ---
 
+# Getting Started (Local Development)
+
+## Prerequisites
+
+* Java 17, Maven, Node.js 20+, Docker Desktop
+
+## Backend (all 9 services + Postgres)
+
+```bash
+cp .env.example .env   # adjust values if needed
+docker compose up --build
+```
+
+| Service | Port |
+|---|---|
+| config-server | 8888 |
+| api-gateway | 8080 |
+| auth-service | 8081 |
+| user-service | 8082 |
+| outage-service | 8083 |
+| notification-service | 8084 |
+| complaint-service | 8085 |
+| payment-service | 8086 |
+| admin-service | 8087 |
+
+Each service exposes a health check at `/actuator/health` and a placeholder
+route at `/api/<resource>/ping` (e.g. `http://localhost:8080/api/users/ping`
+via the gateway).
+
+## Frontend
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Runs at `http://localhost:5173` and talks to the API gateway at
+`VITE_API_BASE_URL` (defaults to `http://localhost:8080`).
+
+---
+
 # License
 
 This project is developed for educational and portfolio purposes.

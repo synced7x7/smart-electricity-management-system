@@ -1,0 +1,45 @@
+server:
+  port: ${API_GATEWAY_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  config:
+    import: optional:configserver:http://localhost:${CONFIG_SERVER_PORT:8888}
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+          predicates:
+            - Path=/api/auth/**
+        - id: user-service
+          uri: ${USER_SERVICE_URL:http://localhost:8082}
+          predicates:
+            - Path=/api/users/**
+        - id: outage-service
+          uri: ${OUTAGE_SERVICE_URL:http://localhost:8083}
+          predicates:
+            - Path=/api/outages/**
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+          predicates:
+            - Path=/api/notifications/**
+        - id: complaint-service
+          uri: ${COMPLAINT_SERVICE_URL:http://localhost:8085}
+          predicates:
+            - Path=/api/complaints/**
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://localhost:8086}
+          predicates:
+            - Path=/api/payments/**
+        - id: admin-service
+          uri: ${ADMIN_SERVICE_URL:http://localhost:8087}
+          predicates:
+            - Path=/api/admin/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
