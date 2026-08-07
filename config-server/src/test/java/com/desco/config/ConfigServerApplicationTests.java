@@ -1,4 +1,4 @@
-package com.desco.configserver;
+package com.desco.config;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

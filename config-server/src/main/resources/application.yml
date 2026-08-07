@@ -1,19 +1,56 @@
-server:
-  port: ${CONFIG_SERVER_PORT:8888}
-
 spring:
   application:
-    name: config-server
-  profiles:
-    active: native
+    name: admin-service
+
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URI:http://config-server:8888}"
+
   cloud:
     config:
-      server:
-        native:
-          search-locations: classpath:/config-repo
+      username: ${CONFIG_SERVER_USERNAME:config-user}
+      password: ${CONFIG_SERVER_PASSWORD:config-secret}
+      fail-fast: false
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
+        max-interval: 2000
+
+  # Admin service has no DB — suppress datasource auto-configuration
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+server:
+  port: 8087
+
+jwt:
+  secret: ${JWT_SECRET:desco-super-secret-key-must-be-at-least-256-bits-long-for-hs256}
+
+# Downstream service URLs (overridden by config-server/admin-service.yml)
+services:
+  user:
+    url: ${USER_SERVICE_URL:http://user-service:8082}
+  outage:
+    url: ${OUTAGE_SERVICE_URL:http://outage-service:8083}
+  complaint:
+    url: ${COMPLAINT_SERVICE_URL:http://complaint-service:8085}
+  payment:
+    url: ${PAYMENT_SERVICE_URL:http://payment-service:8086}
+  notification:
+    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.desco.admin: DEBUG
+    org.springframework.web.reactive.function.client: INFO
