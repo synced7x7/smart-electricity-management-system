@@ -1,3 +1,42 @@
-info:
-  config-source: config-server
-  service: admin-service
+server:
+  port: 8087
+
+spring:
+  application:
+    name: admin-service
+
+jwt:
+  secret: ${JWT_SECRET:desco-super-secret-key-must-be-at-least-256-bits-long-for-hs256}
+
+# Downstream service URLs used by admin aggregator
+services:
+  user:
+    url: ${USER_SERVICE_URL:http://user-service:8082}
+  outage:
+    url: ${OUTAGE_SERVICE_URL:http://outage-service:8083}
+  complaint:
+    url: ${COMPLAINT_SERVICE_URL:http://complaint-service:8085}
+  payment:
+    url: ${PAYMENT_SERVICE_URL:http://payment-service:8086}
+  notification:
+    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.desco.admin: DEBUG

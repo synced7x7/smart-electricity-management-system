@@ -1,3 +1,104 @@
-info:
-  config-source: config-server
-  service: api-gateway
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns:
+              - "http://localhost:3000"
+              - "https://*.vercel.app"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      routes:
+        # ── Auth Service ──────────────────────────────────────────
+        - id: auth-service
+          uri: ${AUTH_SERVICE_URL:http://auth-service:8081}
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=0
+
+        # ── User Service ─────────────────────────────────────────
+        - id: user-service
+          uri: ${USER_SERVICE_URL:http://user-service:8082}
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=0
+
+        # ── Outage Service ───────────────────────────────────────
+        - id: outage-service
+          uri: ${OUTAGE_SERVICE_URL:http://outage-service:8083}
+          predicates:
+            - Path=/api/outages/**
+          filters:
+            - StripPrefix=0
+
+        # ── Notification Service ─────────────────────────────────
+        - id: notification-service
+          uri: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=0
+
+        # ── Complaint Service ────────────────────────────────────
+        - id: complaint-service
+          uri: ${COMPLAINT_SERVICE_URL:http://complaint-service:8085}
+          predicates:
+            - Path=/api/complaints/**
+          filters:
+            - StripPrefix=0
+
+        # ── Payment Service ──────────────────────────────────────
+        - id: payment-service
+          uri: ${PAYMENT_SERVICE_URL:http://payment-service:8086}
+          predicates:
+            - Path=/api/payments/**
+          filters:
+            - StripPrefix=0
+
+        # ── Admin Service ────────────────────────────────────────
+        - id: admin-service
+          uri: ${ADMIN_SERVICE_URL:http://admin-service:8087}
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - StripPrefix=0
+
+      # Default filters applied to every route
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+jwt:
+  secret: ${JWT_SECRET:desco-super-secret-key-must-be-at-least-256-bits-long-for-hs256}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.desco: DEBUG
+    org.springframework.cloud.gateway: DEBUG

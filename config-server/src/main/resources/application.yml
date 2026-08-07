@@ -1,19 +1,35 @@
 server:
-  port: ${CONFIG_SERVER_PORT:8888}
+  port: 8888
 
 spring:
   application:
     name: config-server
+
   profiles:
     active: native
+
   cloud:
     config:
       server:
         native:
-          search-locations: classpath:/config-repo
+          search-locations: classpath:/configs
+
+  security:
+    user:
+      name: config-user
+      password: config-secret
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health, info
+
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.config: DEBUG
