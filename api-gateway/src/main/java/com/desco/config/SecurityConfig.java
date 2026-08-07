@@ -1,4 +1,4 @@
-package com.desco.admin.config;
+package com.desco.config;
 
 import com.desco.admin.security.GatewayHeaderAuthFilter;
 import lombok.RequiredArgsConstructor;
@@ -29,18 +29,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/actuator/**",
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html").permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(gatewayHeaderAuthFilter,
-                UsernamePasswordAuthenticationFilter.class)
-            .build();
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/actuator/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(gatewayHeaderAuthFilter,
+                        UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 }
