@@ -16,11 +16,11 @@ public class ApiGatewayApplication {
 
 
 /*
- DESCO Simulation — API Gateway
+API Gateway
  Single entry-point for all client traffic.
- Responsibilities:
    - JWT validation on every protected route
     - Route forwarding to downstream microservices
   - CORS policy enforcement
    - Rate limiting (per-IP)
  */
+
