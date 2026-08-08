@@ -1,45 +1,56 @@
-server:
-  port: ${API_GATEWAY_PORT:8080}
-
 spring:
   application:
-    name: api-gateway
+    name: admin-service
+
   config:
-    import: optional:configserver:http://localhost:${CONFIG_SERVER_PORT:8888}
+    import: "optional:configserver:${CONFIG_SERVER_URI:http://config-server:8888}"
+
   cloud:
-    gateway:
-      routes:
-        - id: auth-service
-          uri: ${AUTH_SERVICE_URL:http://localhost:8081}
-          predicates:
-            - Path=/api/auth/**
-        - id: user-service
-          uri: ${USER_SERVICE_URL:http://localhost:8082}
-          predicates:
-            - Path=/api/users/**
-        - id: outage-service
-          uri: ${OUTAGE_SERVICE_URL:http://localhost:8083}
-          predicates:
-            - Path=/api/outages/**
-        - id: notification-service
-          uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
-          predicates:
-            - Path=/api/notifications/**
-        - id: complaint-service
-          uri: ${COMPLAINT_SERVICE_URL:http://localhost:8085}
-          predicates:
-            - Path=/api/complaints/**
-        - id: payment-service
-          uri: ${PAYMENT_SERVICE_URL:http://localhost:8086}
-          predicates:
-            - Path=/api/payments/**
-        - id: admin-service
-          uri: ${ADMIN_SERVICE_URL:http://localhost:8087}
-          predicates:
-            - Path=/api/admin/**
+    config:
+      username: ${CONFIG_SERVER_USERNAME:config-user}
+      password: ${CONFIG_SERVER_PASSWORD:config-secret}
+      fail-fast: false
+      retry:
+        initial-interval: 1000
+        max-attempts: 6
+        max-interval: 2000
+
+  # Admin service has no DB — suppress datasource auto-configuration
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+server:
+  port: 8087
+
+jwt:
+  secret: ${JWT_SECRET:desco-super-secret-key-must-be-at-least-256-bits-long-for-hs256}
+
+# Downstream service URLs (overridden by config-server/admin-service.yml)
+services:
+  user:
+    url: ${USER_SERVICE_URL:http://user-service:8082}
+  outage:
+    url: ${OUTAGE_SERVICE_URL:http://outage-service:8083}
+  complaint:
+    url: ${COMPLAINT_SERVICE_URL:http://complaint-service:8085}
+  payment:
+    url: ${PAYMENT_SERVICE_URL:http://payment-service:8086}
+  notification:
+    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.desco.admin: DEBUG
+    org.springframework.web.reactive.function.client: INFO
