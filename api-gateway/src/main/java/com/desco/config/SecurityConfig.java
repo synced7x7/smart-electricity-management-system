@@ -1,46 +1,30 @@
 package com.desco.config;
 
-import com.desco.admin.security.GatewayHeaderAuthFilter;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 
-/**
- * All /api/admin/** endpoints require ADMIN role.
- * Authentication is derived from X-User-* gateway headers.
- * Method-level @PreAuthorize("hasRole('ADMIN')") on the controller class
- * provides the second line of defence.
- */
+//api gateway security configuration
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final GatewayHeaderAuthFilter gatewayHeaderAuthFilter;
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
         return http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/actuator/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(gatewayHeaderAuthFilter,
-                        UsernamePasswordAuthenticationFilter.class)
-                .build();
+            .csrf(ServerHttpSecurity.CsrfSpec::disable) //no cookies so no csrf preferred
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable) // using JWT
+            .formLogin(ServerHttpSecurity.FormLoginSpec::disable) //disable spring basic HTML login page
+            .authorizeExchange(auth -> auth
+                .pathMatchers(
+                    "/api/auth/login",
+                    "/api/auth/register",
+                    "/actuator/**").permitAll() //health/monitoring EP
+                .anyExchange().authenticated() //don't require authorizing
+            )
+            .build();
     }
 }

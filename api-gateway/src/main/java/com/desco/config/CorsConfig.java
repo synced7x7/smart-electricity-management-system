@@ -8,16 +8,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
- * Global CORS policy applied at the gateway level.
- *
- * Allowed origins:
- *  - http://localhost:3000       (local dev)
- *  - https://*.vercel.app        (Vercel preview/prod deployments)
- *
- * Downstream services do NOT need their own CORS config because
- * they are only reachable via the gateway in production.
- */
+//allows which frontend can communicate with backend
 @Configuration
 public class CorsConfig {
 
@@ -36,7 +27,7 @@ public class CorsConfig {
         ));
 
         config.setAllowedHeaders(List.of(
-                "Authorization",
+                "Authorization", //frontend can send JWT through this
                 "Content-Type",
                 "X-Requested-With",
                 "Accept",
@@ -45,7 +36,7 @@ public class CorsConfig {
                 "Access-Control-Request-Headers"
         ));
 
-        config.setExposedHeaders(List.of(
+        config.setExposedHeaders(List.of( //frontend can read this
                 "X-RateLimit-Limit",
                 "X-RateLimit-Remaining",
                 "Authorization"
@@ -60,3 +51,28 @@ public class CorsConfig {
         return new CorsWebFilter(source);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Global CORS policy applied at the gateway level.
+ *
+ * Allowed origins:
+ *  - http://localhost:3000       (local dev)
+ *  - https://*.vercel.app        (Vercel preview/prod deployments)
+ *
+ * Downstream services do NOT need their own CORS config because
+ * they are only reachable via the gateway in production.
+ */

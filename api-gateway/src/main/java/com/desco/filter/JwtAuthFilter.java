@@ -1,78 +1,62 @@
 package com.desco.filter;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.desco.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
-import java.io.IOException;
+import java.util.List;
 
-/**
- * Servlet-level JWT filter for the auth-service.
- *
- * The gateway already validates tokens for most paths, but the
- * auth-service also needs its own filter for any self-protected
- * endpoints (e.g. logout, token introspection).
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthFilter extends OncePerRequestFilter {
+public class JwtAuthFilter implements WebFilter {
 
-    private final JwtService jwtService;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final JwtUtil jwtUtil;
 
+    //Not returning actual data (async)
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest  request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain         filterChain
-    ) throws ServletException, IOException {
+    public @NonNull Mono<Void> filter(@NonNull ServerWebExchange exchange,
+                                      @NonNull WebFilterChain chain) {
 
-        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String authHeader = exchange.getRequest()
+            .getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+            return chain.filter(exchange);
         }
 
-        final String token = authHeader.substring(7);
+        String token = authHeader.substring(7);
 
-        if (!jwtService.isValid(token)) {
-            log.warn("Invalid JWT received at auth-service");
-            filterChain.doFilter(request, response);
-            return;
+        if (!jwtUtil.isValid(token)) {
+            log.warn("Invalid JWT received at gateway");
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
 
-        // Only set authentication if not already set
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            String email = jwtService.extractEmail(token);
+        String email = jwtUtil.getEmail(token);
+        String role  = jwtUtil.getRole(token);
 
-            if (email != null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+            email, null,
+            role != null
+                ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                : List.of()
+        );
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails, null, userDetails.getAuthorities()
-                        );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                log.debug("Authenticated user '{}' via JWT at auth-service", email);
-            }
-        }
+        log.debug("Authenticated user '{}' with role '{}' at gateway", email, role);
 
-        filterChain.doFilter(request, response);
+        return chain.filter(exchange)
+            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
     }
 }
