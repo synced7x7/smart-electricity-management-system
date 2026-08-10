@@ -10,7 +10,7 @@ import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-//routing configuration + JSON serialization configuration.
+//routing requests to the correct microservice
 @Configuration
 @RequiredArgsConstructor
 public class GatewayConfig {
@@ -46,7 +46,7 @@ public class GatewayConfig {
 
             .route("user-service", r -> r
                 .path("/api/users/**")
-                .uri(userServiceUrl))
+                .uri(userServiceUrl)) //Example: http://user-service:8082/api/users/profile
 
             .route("outage-service", r -> r
                 .path("/api/outages/**")
@@ -76,7 +76,7 @@ public class GatewayConfig {
     public ObjectMapper objectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS); //if we dont use this we get something like 1723456789000
         return mapper;
     }
 }
