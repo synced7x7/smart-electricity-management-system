@@ -1,6 +1,6 @@
 spring:
   application:
-    name: admin-service
+    name: auth-service
 
   config:
     import: "optional:configserver:${CONFIG_SERVER_URI:http://config-server:8888}"
@@ -15,30 +15,28 @@ spring:
         max-attempts: 6
         max-interval: 2000
 
-  # Admin service has no DB — suppress datasource auto-configuration
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-  port: 8087
+  port: 8081
 
 jwt:
   secret: ${JWT_SECRET:desco-super-secret-key-must-be-at-least-256-bits-long-for-hs256}
-
-# Downstream service URLs (overridden by config-server/admin-service.yml)
-services:
-  user:
-    url: ${USER_SERVICE_URL:http://user-service:8082}
-  outage:
-    url: ${OUTAGE_SERVICE_URL:http://outage-service:8083}
-  complaint:
-    url: ${COMPLAINT_SERVICE_URL:http://complaint-service:8085}
-  payment:
-    url: ${PAYMENT_SERVICE_URL:http://payment-service:8086}
-  notification:
-    url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8084}
+  access-token-expiration: 900000       # 15 min
+  refresh-token-expiration: 604800000   # 7 days
 
 management:
   endpoints:
@@ -52,5 +50,4 @@ management:
 logging:
   level:
     root: INFO
-    com.desco.admin: DEBUG
-    org.springframework.web.reactive.function.client: INFO
+    com.desco.authservice: DEBUG
