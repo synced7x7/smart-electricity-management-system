@@ -1,12 +1,13 @@
 package com.desco.authservice.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-/**
- * Thrown for business-level auth failures:
- * duplicate email, bad credentials, account inactive, etc.
+/*
+ business-level auth failures duplicate email, bad credentials, account inactive, etc.
  */
+@Getter
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class AuthException extends RuntimeException {
 
@@ -22,7 +23,4 @@ public class AuthException extends RuntimeException {
         this.status = status;
     }
 
-    public HttpStatus getStatus() {
-        return status;
-    }
 }

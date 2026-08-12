@@ -15,6 +15,6 @@ import lombok.NoArgsConstructor;
 public class RefreshTokenRequest {
 
     @NotBlank(message = "Refresh token is required")
-    @Schema(description = "Valid refresh token obtained at login", example = "eyJhbGci...")
+    @Schema(description = "Valid refresh token obtained at login")
     private String refreshToken;
 }

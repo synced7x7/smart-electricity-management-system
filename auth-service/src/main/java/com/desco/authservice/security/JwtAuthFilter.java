@@ -17,13 +17,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Servlet-level JWT filter for the auth-service.
- *
- * The gateway already validates tokens for most paths, but the
- * auth-service also needs its own filter for any self-protected
- * endpoints (e.g. logout, token introspection).
- */
+/* Servlet-level JWT filter for the auth-service.
+ The gateway already validates tokens for most paths, but the
+ auth-service also needs its own filter for any self-protected
+ endpoints (e.g. logout, token introspection).*/
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -54,7 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Only set authentication if not already set
+        // set authentication if not set
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             String email = jwtService.extractEmail(token);
 

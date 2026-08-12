@@ -1,6 +1,7 @@
 package com.desco.authservice.security;
 
-import com.desco.auth.repository.UserRepository;
+import com.desco.authservice.entity.User;
+import com.desco.authservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,10 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Loads a {@link com.desco.auth.entity.User} by email for Spring Security.
- * The username field is the user's email address.
- */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,7 +27,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         log.debug("Loading user by email: {}", email);
 
         return userRepository.findByEmail(email)
-                .filter(u -> u.isActive())
+                .filter(User::isActive)
                 .map(user -> new org.springframework.security.core.userdetails.User(
                         user.getEmail(),
                         user.getPasswordHash(),

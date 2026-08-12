@@ -1,6 +1,6 @@
 package com.desco.authservice.dto.request;
 
-import com.desco.auth.entity.User;
+import com.desco.authservice.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;

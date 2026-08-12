@@ -8,11 +8,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Login credentials payload")
+@Schema(description = "Login credentials payload") //swagger
 public class LoginRequest {
 
     @NotBlank(message = "Email is required")

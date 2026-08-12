@@ -3,16 +3,13 @@ package com.desco.authservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Core authentication entity.
- * Owns the {@code users} table.
- * Profile details live in user-service's {@code user_profiles} table.
- */
 @Entity
 @Table(name = "users")
 @Getter
@@ -34,11 +31,13 @@ public class User {
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "role", columnDefinition = "user_role")
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "area", columnDefinition = "area_name")
     private Area area;
 
     @Column(name = "is_active", nullable = false)
