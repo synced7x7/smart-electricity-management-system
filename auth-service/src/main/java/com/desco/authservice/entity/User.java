@@ -8,11 +8,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Core authentication entity.
- * Owns the {@code users} table.
- * Profile details live in user-service's {@code user_profiles} table.
- */
 @Entity
 @Table(name = "users")
 @Getter

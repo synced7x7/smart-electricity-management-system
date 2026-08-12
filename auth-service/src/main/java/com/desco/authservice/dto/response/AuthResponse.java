@@ -1,6 +1,6 @@
 package com.desco.authservice.dto.response;
 
-import com.desco.auth.entity.User;
+import com.desco.authservice.entity.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -10,9 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-/**
- * Returned on successful login or token refresh.
- */
+// For successful login and auth response
 @Data
 @Builder
 @NoArgsConstructor
@@ -33,8 +31,6 @@ public class AuthResponse {
 
     @Schema(description = "Access token lifetime in milliseconds", example = "86400000")
     private long expiresIn;
-
-    // ── Authenticated user summary ────────────────────────────────
 
     @Schema(description = "User UUID")
     private UUID userId;

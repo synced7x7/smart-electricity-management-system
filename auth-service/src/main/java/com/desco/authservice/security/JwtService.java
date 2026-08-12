@@ -1,6 +1,6 @@
 package com.desco.authservice.security;
 
-import com.desco.auth.entity.User;
+import com.desco.authservice.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -17,12 +17,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Handles JWT access-token and refresh-token lifecycle.
- *
- * Access token  — short-lived (default 24 h), carries role + area claims.
- * Refresh token — long-lived  (default 7 d),  carries only subject.
- */
+
+/*Handles JWT access-token and refresh-token lifecycle.
+Access token  — short-lived (default 24 h), carries role + area claims.
+Refresh token — long-lived  (default 7 d),  carries only subject.*/
 @Slf4j
 @Service
 public class JwtService {
@@ -47,11 +45,7 @@ public class JwtService {
                 accessTokenExpirationMs, refreshTokenExpirationMs);
     }
 
-    // ── Token generation ──────────────────────────────────────────
-
-    /**
-     * Build a signed access token embedding user identity claims.
-     */
+    // Token generation
     public String generateAccessToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("email", user.getEmail());
@@ -69,9 +63,7 @@ public class JwtService {
                 .compact();
     }
 
-    /**
-     * Build a signed refresh token (subject only, no role/area).
-     */
+    // refresh Token
     public String generateRefreshToken(User user) {
         return Jwts.builder()
                 .subject(user.getId().toString())
@@ -81,8 +73,7 @@ public class JwtService {
                 .compact();
     }
 
-    // ── Token validation ──────────────────────────────────────────
-
+    // Token validation
     public boolean isValid(String token) {
         try {
             Claims claims = extractAllClaims(token);
@@ -93,7 +84,7 @@ public class JwtService {
         }
     }
 
-    // ── Claim extraction ──────────────────────────────────────────
+    // Token claim extraction
 
     public UUID extractUserId(String token) {
         return UUID.fromString(extractAllClaims(token).getSubject());
@@ -107,7 +98,7 @@ public class JwtService {
         return accessTokenExpirationMs;
     }
 
-    // ── Private helpers ───────────────────────────────────────────
+    // Private helpers
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()

@@ -1,6 +1,6 @@
 package com.desco.authservice.repository;
 
-import com.desco.auth.entity.User;
+import com.desco.authservice.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

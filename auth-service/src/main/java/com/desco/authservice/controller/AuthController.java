@@ -1,14 +1,12 @@
 package com.desco.authservice.controller;
 
-import com.desco.auth.dto.request.LoginRequest;
-import com.desco.auth.dto.request.RefreshTokenRequest;
-import com.desco.auth.dto.request.RegisterRequest;
-import com.desco.auth.dto.response.ApiResponse;
-import com.desco.auth.dto.response.AuthResponse;
-import com.desco.auth.service.AuthService;
+import com.desco.authservice.dto.request.LoginRequest;
+import com.desco.authservice.dto.request.RefreshTokenRequest;
+import com.desco.authservice.dto.request.RegisterRequest;
+import com.desco.authservice.dto.response.ApiResponse;
+import com.desco.authservice.dto.response.AuthResponse;
+import com.desco.authservice.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,12 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Authentication endpoints:
- *   POST /api/auth/register  — public
- *   POST /api/auth/login     — public
- *   POST /api/auth/refresh   — public (token required)
- *   POST /api/auth/logout    — protected
+/*
+  Authentication endpoints:
+   POST /api/auth/register  — public
+   POST /api/auth/login     — public
+   POST /api/auth/refresh   — public (token needed)
+    POST /api/auth/logout    — protected
  */
 @Slf4j
 @RestController
@@ -35,8 +33,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // ── Register ──────────────────────────────────────────────────
-
+    // Register
     @PostMapping("/register")
     @Operation(summary = "Register a new user account")
     @ApiResponses({
@@ -58,7 +55,7 @@ public class AuthController {
                 .body(ApiResponse.success("Registration successful", response));
     }
 
-    // ── Login ─────────────────────────────────────────────────────
+    // Login
 
     @PostMapping("/login")
     @Operation(summary = "Authenticate and receive JWT tokens")
@@ -77,7 +74,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Login successful", response));
     }
 
-    // ── Refresh ───────────────────────────────────────────────────
+    // Refresh
 
     @PostMapping("/refresh")
     @Operation(summary = "Exchange a refresh token for a new access token")
@@ -96,7 +93,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Token refreshed successfully", response));
     }
 
-    // ── Logout ────────────────────────────────────────────────────
+    // Logout
 
     @PostMapping("/logout")
     @SecurityRequirement(name = "bearerAuth")
