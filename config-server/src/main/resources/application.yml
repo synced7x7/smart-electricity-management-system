@@ -12,7 +12,7 @@ spring:
     config:
       server:
         native:
-          search-locations: classpath:/configs
+          search-locations: classpath:/config-repo,classpath:/configs
 
   security:
     user:

@@ -13,10 +13,10 @@
   </parent>
 
   <groupId>com.desco</groupId>
-  <artifactId>admin-service</artifactId>
+  <artifactId>config-server</artifactId>
   <version>1.0.0</version>
-  <name>admin-service</name>
-  <description>DESCO Simulation - Admin Dashboard Aggregator Service</description>
+  <name>config-server</name>
+  <description>DESCO Simulation - Config Server</description>
 
   <properties>
     <java.version>21</java.version>
