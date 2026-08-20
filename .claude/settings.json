@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(PGPASSWORD='IEXR4qRJzjpLD0Bh' psql -h aws-0-ap-northeast-1.pooler.supabase.com -p 5432 -U postgres.zwymhosocnbkwjhyirui -d postgres -c \"SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_name='users' ORDER BY ordinal_position;\")",
+      "Bash(lsof -ti:8081)",
+      "Bash(kill 12294 85331)",
+      "Bash(kill -9 85331)",
+      "Bash(mvn -q clean package -DskipTests)",
+      "Bash(echo \"BUILD_EXIT=$?\")",
+      "Bash(PGPASSWORD='IEXR4qRJzjpLD0Bh' psql -h aws-0-ap-northeast-1.pooler.supabase.com -p 5432 -U postgres.zwymhosocnbkwjhyirui -d postgres -c \"SELECT email, role, area, is_active FROM public.users ORDER BY created_at DESC LIMIT 5;\")",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST http://localhost:8081/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"sohan@test.com\",\"password\":\"Test123!\"}')",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST http://localhost:8081/api/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"noarea@test.com\",\"password\":\"Test123!\"}')",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST http://localhost:8081/api/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"bad@test.com\",\"password\":\"Test123!\",\"area\":\"DHAKA\"}')",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST http://localhost:8081/api/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"sohan@test.com\",\"password\":\"Test123!\",\"area\":\"MIRPUR\"}')",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST http://localhost:8081/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"sohan@test.com\",\"password\":\"wrong\"}')",
+      "Bash(PGPASSWORD='IEXR4qRJzjpLD0Bh' psql -h aws-0-ap-northeast-1.pooler.supabase.com -p 5432 -U postgres.zwymhosocnbkwjhyirui -d postgres -c \"DELETE FROM public.users WHERE email IN \\('testuser@example.com','test123@example.com','noarea@test.com'\\);\")"
+    ]
+  }
+}
