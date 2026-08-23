@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: complaint-service
+
+  datasource:
+    url: jdbc:h2:mem:complaintdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+server:
+  port: 8085
+
+jwt:
+  secret: desco-super-secret-key-must-be-at-least-256-bits-long-for-hs256
+
+notification:
+  service:
+    url: http://localhost:8084
+
+user:
+  service:
+    url: http://localhost:8082
+
+logging:
+  level:
+    root: INFO
+    com.desco.complaint: DEBUG
