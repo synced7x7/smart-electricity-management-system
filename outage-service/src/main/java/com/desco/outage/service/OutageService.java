@@ -10,7 +10,8 @@ import java.util.UUID;
 
 public interface OutageService {
 
-    OutageResponse createOutage(OutageRequest request);
+    /** {@code createdBy} comes from the authenticated caller's JWT, never the request body. */
+    OutageResponse createOutage(OutageRequest request, UUID createdBy);
 
     OutageResponse getOutageById(UUID id);
 

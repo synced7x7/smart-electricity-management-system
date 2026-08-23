@@ -36,7 +36,9 @@ public class NotificationServiceImpl implements NotificationService {
                 .referenceId(request.getReferenceId())
                 .build();
 
-        Notification saved = notificationRepository.save(notification);
+        // saveAndFlush (not save): @CreationTimestamp is only generated once the INSERT
+        // actually runs; a plain save() defers it and the response shows a null createdAt.
+        Notification saved = notificationRepository.saveAndFlush(notification);
         log.info("Created notification {} of type {} (targetUser={}, targetArea={})",
                 saved.getId(), saved.getType(), saved.getTargetUserId(), saved.getTargetArea());
 

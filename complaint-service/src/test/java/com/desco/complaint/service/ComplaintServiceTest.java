@@ -77,7 +77,7 @@ class ComplaintServiceTest {
     @Test
     @DisplayName("submitComplaint creates complaint, sends alert, returns DTO")
     void testSubmitComplaint_Success() {
-        when(complaintRepository.save(any(Complaint.class))).thenReturn(sampleComplaint);
+        when(complaintRepository.saveAndFlush(any(Complaint.class))).thenReturn(sampleComplaint);
 
         ComplaintResponse response = complaintService.submitComplaint(sampleRequest);
 
@@ -86,7 +86,7 @@ class ComplaintServiceTest {
         assertThat(response.getUserId()).isEqualTo(userId);
         assertThat(response.getStatus()).isEqualTo(ComplaintStatus.PENDING);
 
-        verify(complaintRepository, times(1)).save(any(Complaint.class));
+        verify(complaintRepository, times(1)).saveAndFlush(any(Complaint.class));
         verify(notificationClient, times(1)).sendComplaintNotification(eq(userId), eq("BANANI"), anyString(), anyString(), eq(complaintId));
     }
 

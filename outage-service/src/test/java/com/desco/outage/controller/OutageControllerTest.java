@@ -8,10 +8,12 @@ import com.desco.outage.enums.OutageStatus;
 import com.desco.outage.enums.OutageType;
 import com.desco.outage.exception.GlobalExceptionHandler;
 import com.desco.outage.exception.ResourceNotFoundException;
+import com.desco.outage.security.AuthenticatedUser;
 import com.desco.outage.security.JwtAuthFilter;
 import com.desco.outage.security.JwtService;
 import com.desco.outage.service.OutageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -90,7 +95,16 @@ class OutageControllerTest {
     @Test
     @DisplayName("POST /api/outages creates outage successfully")
     void testCreateOutage() throws Exception {
-        when(outageService.createOutage(any(OutageRequest.class))).thenReturn(sampleResponse);
+        when(outageService.createOutage(any(OutageRequest.class), any(UUID.class))).thenReturn(sampleResponse);
+
+        // The endpoint reads the caller's id from the security principal to populate
+        // outages.created_by. This slice runs with addFilters=false, so no filter
+        // populates the context — @AuthenticationPrincipal resolves straight from
+        // SecurityContextHolder, so set it directly here.
+        var principal = new AuthenticatedUser(UUID.randomUUID(), "admin@desco.com");
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        principal, null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))));
 
         mockMvc.perform(post("/api/outages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,6 +113,11 @@ class OutageControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.title").value("Emergency Grid Repair"))
                 .andExpect(jsonPath("$.data.area").value("UTTARA"));
+    }
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test

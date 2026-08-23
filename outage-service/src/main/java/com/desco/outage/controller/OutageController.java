@@ -6,6 +6,7 @@ import com.desco.outage.dto.response.ApiResponse;
 import com.desco.outage.dto.response.OutageResponse;
 import com.desco.outage.enums.Area;
 import com.desco.outage.enums.OutageStatus;
+import com.desco.outage.security.AuthenticatedUser;
 import com.desco.outage.service.OutageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +30,10 @@ public class OutageController {
 
     @PostMapping
     @Operation(summary = "Create a scheduled or emergency outage record")
-    public ResponseEntity<ApiResponse<OutageResponse>> createOutage(@Valid @RequestBody OutageRequest request) {
-        OutageResponse response = outageService.createOutage(request);
+    public ResponseEntity<ApiResponse<OutageResponse>> createOutage(
+            @Valid @RequestBody OutageRequest request,
+            @AuthenticationPrincipal AuthenticatedUser caller) {
+        OutageResponse response = outageService.createOutage(request, caller.userId());
         return new ResponseEntity<>(ApiResponse.success("Outage scheduled successfully", response), HttpStatus.CREATED);
     }
 
