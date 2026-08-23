@@ -1,4 +1,4 @@
-package com.desco.complaintservice;
+package com.desco.complaint;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ComplaintServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ComplaintServiceApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(ComplaintServiceApplication.class, args);
+    }
 }
