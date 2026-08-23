@@ -1,4 +1,4 @@
-package com.desco.notificationservice.controller;
+package com.desco.notification.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
