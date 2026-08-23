@@ -16,9 +16,9 @@ spring:
         max-interval: 2000
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:descodb}}
-    username: ${DB_USERNAME:${POSTGRES_USER:desco}}
-    password: ${DB_PASSWORD:${POSTGRES_PASSWORD:desco_local_password}}
+    url: ${DB_URL:jdbc:postgresql://aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require}
+    username: ${DB_USERNAME:postgres.zwymhosocnbkwjhyirui}
+    password: ${DB_PASSWORD:IEXR4qRJzjpLD0Bh}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
