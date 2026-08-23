@@ -28,3 +28,12 @@ npm-debug.log*
 
 # Local documentation
 CONTEXT.md
+.logs/
+
+# Contains hardcoded Bash allowlist entries with live credentials embedded in
+# command strings (e.g. psql connection args) — never commit this file.
+.claude/settings.json
+
+
+#test scripts
+*.sh

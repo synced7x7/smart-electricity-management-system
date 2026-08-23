@@ -21,6 +21,11 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Supabase's session-mode pooler caps total clients at 15 across ALL services.
+      # Keep each service's pool small so several can run at once.
+      maximum-pool-size: 5
+      minimum-idle: 1
 
   jpa:
     hibernate:
