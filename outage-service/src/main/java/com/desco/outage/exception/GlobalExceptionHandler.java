@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Arrays;
 
 @Slf4j
@@ -80,6 +82,15 @@ public class GlobalExceptionHandler {
     /** A referenced row does not exist, or a unique/NOT NULL constraint was violated. */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, WebRequest request) {
+        String unsupported = unsupportedEnumValue(ex);
+        if (unsupported != null) {
+            return new ResponseEntity<>(ErrorResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message(unsupported)
+                    .error("Validation Error")
+                    .timestamp(LocalDateTime.now())
+                    .build(), HttpStatus.BAD_REQUEST);
+        }
         log.warn("Rejected by a database constraint: {}", ex.getMostSpecificCause().getMessage());
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
@@ -92,6 +103,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
+        String unsupported = unsupportedEnumValue(ex);
+        if (unsupported != null) {
+            return new ResponseEntity<>(ErrorResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message(unsupported)
+                    .error("Validation Error")
+                    .timestamp(LocalDateTime.now())
+                    .build(), HttpStatus.BAD_REQUEST);
+        }
         // Log the detail; do NOT return it. ex.getMessage() on a JDBC failure contains the
         // generated SQL and schema names, which should never reach a client.
         log.error("Unhandled exception", ex);
@@ -102,5 +122,29 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    private static final Pattern INVALID_ENUM =
+            Pattern.compile("invalid input value for enum (\\w+): \"([^\"]*)\"");
+
+    /**
+     * Non-null when the cause chain is Postgres rejecting an enum label it has
+     * never been told about (SQLSTATE 22P02). That happens when the application
+     * ships ahead of its migration: the Java enum knows all 64 districts, the
+     * database still only knows the 8 original DESCO zones. Without this the
+     * caller just gets an opaque 500.
+     */
+    private static String unsupportedEnumValue(Throwable ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t.getMessage() != null) {
+                Matcher m = INVALID_ENUM.matcher(t.getMessage());
+                if (m.find()) {
+                    return "'" + m.group(2) + "' is not a value the database accepts for "
+                            + m.group(1) + " yet. The database schema is behind the application — "
+                            + "apply db/02_area_nationwide.sql, then retry.";
+                }
+            }
+            if (t.getCause() == t) break;
+        }
+        return null;
     }
 }

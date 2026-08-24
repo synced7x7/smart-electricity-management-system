@@ -36,36 +36,64 @@ public class GatewayConfig {
     @Value("${ADMIN_SERVICE_URL:http://admin-service:8087}")
     private String adminServiceUrl;
 
+    /**
+     * outage-service, notification-service and complaint-service each declare their
+     * own CorsConfigurationSource allowing http://localhost:5173, and CorsConfig in
+     * this package adds the very same header again as the response is proxied back.
+     * Those three routes therefore answered a browser with TWO identical
+     * Access-Control-Allow-Origin headers, which every browser rejects outright
+     * ("contains multiple values") — the frontend could not read them at all.
+     *
+     * The four services owned by 220041151 already had their own CORS removed for
+     * exactly this reason; these three are teammate-owned, so the duplicate is
+     * collapsed here rather than by editing their modules.
+     *
+     * This has to be applied per route rather than through
+     * spring.cloud.gateway.default-filters: default filters are only injected by
+     * RouteDefinitionRouteLocator, which handles routes declared as *properties*.
+     * The routes below are built programmatically and never pass through it, so the
+     * property form is silently inert.
+     */
+    private static final String DUPLICATED_CORS_HEADERS =
+        "Access-Control-Allow-Origin Access-Control-Allow-Credentials";
+
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
 
             .route("auth-service", r -> r
                 .path("/api/auth/**")
+                .filters(f -> f.dedupeResponseHeader(DUPLICATED_CORS_HEADERS, "RETAIN_UNIQUE"))
                 .uri(authServiceUrl))
 
             .route("user-service", r -> r
                 .path("/api/users/**")
+                .filters(f -> f.dedupeResponseHeader(DUPLICATED_CORS_HEADERS, "RETAIN_UNIQUE"))
                 .uri(userServiceUrl)) //Example: http://user-service:8082/api/users/profile
 
             .route("outage-service", r -> r
                 .path("/api/outages/**")
+                .filters(f -> f.dedupeResponseHeader(DUPLICATED_CORS_HEADERS, "RETAIN_UNIQUE"))
                 .uri(outageServiceUrl))
 
             .route("notification-service", r -> r
                 .path("/api/notifications/**")
+                .filters(f -> f.dedupeResponseHeader(DUPLICATED_CORS_HEADERS, "RETAIN_UNIQUE"))
                 .uri(notificationServiceUrl))
 
             .route("complaint-service", r -> r
                 .path("/api/complaints/**")
+                .filters(f -> f.dedupeResponseHeader(DUPLICATED_CORS_HEADERS, "RETAIN_UNIQUE"))
                 .uri(complaintServiceUrl))
 
             .route("payment-service", r -> r
                 .path("/api/payments/**")
+                .filters(f -> f.dedupeResponseHeader(DUPLICATED_CORS_HEADERS, "RETAIN_UNIQUE"))
                 .uri(paymentServiceUrl))
 
             .route("admin-service", r -> r
                 .path("/api/admin/**")
+                .filters(f -> f.dedupeResponseHeader(DUPLICATED_CORS_HEADERS, "RETAIN_UNIQUE"))
                 .uri(adminServiceUrl))
 
             .build();

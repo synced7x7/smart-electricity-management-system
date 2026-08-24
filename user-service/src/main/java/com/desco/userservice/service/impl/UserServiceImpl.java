@@ -78,8 +78,17 @@ public class UserServiceImpl implements UserService {
             UserProfile saved = userProfileRepository.saveAndFlush(profile);
             return toResponse(caller, saved);
         } catch (DataIntegrityViolationException ex) {
-            throw new DuplicateMeterNumberException(
-                    "Meter number '" + request.getMeterNumber() + "' is already registered to another account");
+            // Only claim "duplicate meter number" when that is actually the
+            // constraint that fired. This used to translate EVERY integrity
+            // violation, which produced genuinely misleading errors once other
+            // constraints existed — an unknown enum label reported itself as
+            // "Meter number 'null' is already registered to another account".
+            // (Documented as backend issue #22.)
+            if (isMeterNumberConflict(ex)) {
+                throw new DuplicateMeterNumberException(
+                        "Meter number '" + request.getMeterNumber() + "' is already registered to another account");
+            }
+            throw ex;
         }
     }
 
@@ -89,6 +98,35 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         UserProfile profile = userProfileRepository.findByUserId(userId).orElse(null);
         return toResponse(user, profile);
+    }
+
+    /**
+     * True only for the user_profiles.meter_number UNIQUE constraint.
+     *
+     * Matching on the bare column name is NOT enough: Hibernate puts the whole
+     * generated INSERT in the exception message, and that statement lists every
+     * column — so any failure on this table (an unknown enum label, a foreign
+     * key) contains the text "meter_number" and would be misreported as a
+     * duplicate meter. Match the constraint name, or the unique-violation
+     * wording together with the column.
+     */
+    private static boolean isMeterNumberConflict(DataIntegrityViolationException ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            String message = t.getMessage();
+            if (message != null) {
+                String lower = message.toLowerCase();
+                if (lower.contains("user_profiles_meter_number_key")) {
+                    return true;
+                }
+                boolean uniqueViolation = lower.contains("duplicate key value")
+                        || lower.contains("violates unique constraint");
+                if (uniqueViolation && lower.contains("meter_number")) {
+                    return true;
+                }
+            }
+            if (t.getCause() == t) break;
+        }
+        return false;
     }
 
     private UserProfileResponse toResponse(User user, UserProfile profile) {

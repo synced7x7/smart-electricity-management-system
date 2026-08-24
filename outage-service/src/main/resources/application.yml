@@ -8,8 +8,18 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 5
-      minimum-idle: 1
+      # Supabase's session-mode pooler caps total clients at ~15 across ALL
+      # services. Seven services x 5 was 35 potential connections, and under
+      # load that saturates the pooler — auth-service and notification-service
+      # both failed to BOOT with "Connect timed out" during a heavy test run.
+      #
+      # minimum-idle: 0 matters more than the max: an idle service then holds
+      # no connection at all, so the practical concurrent total stays well
+      # below the cap instead of every service squatting on five.
+      maximum-pool-size: 3
+      minimum-idle: 0
+      idle-timeout: 30000
+      connection-timeout: 20000
 
   jpa:
     hibernate:

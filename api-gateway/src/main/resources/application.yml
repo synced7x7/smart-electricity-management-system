@@ -2,6 +2,12 @@ spring:
   application:
     name: api-gateway
 
+# Note: spring.cloud.gateway.default-filters does NOT work here. Default
+# filters are applied by RouteDefinitionRouteLocator, i.e. only to routes
+# declared as properties. GatewayConfig builds its routes programmatically
+# with RouteLocatorBuilder, which bypasses that entirely — the CORS dedupe
+# filter therefore lives in GatewayConfig.java, not in this file.
+
 server:
   port: 8080
 

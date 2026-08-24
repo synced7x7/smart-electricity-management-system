@@ -13,6 +13,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Arrays;
 
 @Slf4j
@@ -72,6 +74,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
+        String unsupported = unsupportedEnumValue(ex);
+        if (unsupported != null) {
+            return build(HttpStatus.BAD_REQUEST, unsupported, "Validation Error");
+        }
         log.warn("Rejected by a database constraint: {}", ex.getMostSpecificCause().getMessage());
         return build(HttpStatus.BAD_REQUEST,
                 "Request violates a database constraint - check that every referenced id exists",
@@ -80,6 +86,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobal(Exception ex) {
+        String unsupported = unsupportedEnumValue(ex);
+        if (unsupported != null) {
+            return build(HttpStatus.BAD_REQUEST, unsupported, "Validation Error");
+        }
         // Log the detail; do NOT return it. ex.getMessage() on a JDBC failure contains
         // the generated SQL and schema names, which should never reach a client.
         log.error("Unhandled exception", ex);
@@ -89,5 +99,29 @@ public class GlobalExceptionHandler {
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, String error) {
         return new ResponseEntity<>(
                 new ErrorResponse(status.value(), message, error, LocalDateTime.now()), status);
+    }
+    private static final Pattern INVALID_ENUM =
+            Pattern.compile("invalid input value for enum (\\w+): \"([^\"]*)\"");
+
+    /**
+     * Non-null when the cause chain is Postgres rejecting an enum label it has
+     * never been told about (SQLSTATE 22P02). That happens when the application
+     * ships ahead of its migration: the Java enum knows all 64 districts, the
+     * database still only knows the 8 original DESCO zones. Without this the
+     * caller just gets an opaque 500.
+     */
+    private static String unsupportedEnumValue(Throwable ex) {
+        for (Throwable t = ex; t != null; t = t.getCause()) {
+            if (t.getMessage() != null) {
+                Matcher m = INVALID_ENUM.matcher(t.getMessage());
+                if (m.find()) {
+                    return "'" + m.group(2) + "' is not a value the database accepts for "
+                            + m.group(1) + " yet. The database schema is behind the application — "
+                            + "apply db/02_area_nationwide.sql, then retry.";
+                }
+            }
+            if (t.getCause() == t) break;
+        }
+        return null;
     }
 }
