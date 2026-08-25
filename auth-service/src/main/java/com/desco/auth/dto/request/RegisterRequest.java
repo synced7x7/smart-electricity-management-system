@@ -20,4 +20,15 @@ public class RegisterRequest {
     private String password;
 
     private String area;
+
+    /**
+     * Optional. When present and matching the server's configured
+     * ADMIN_REGISTRATION_KEY, the account is created with role = ADMIN.
+     *
+     * Absent or blank means an ordinary customer registration. A present but
+     * wrong key is rejected outright rather than quietly downgraded — silently
+     * handing someone a USER account when they believe they made an admin is
+     * how people end up locked out and confused.
+     */
+    private String adminKey;
 }

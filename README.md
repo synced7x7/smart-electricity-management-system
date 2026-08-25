@@ -168,8 +168,6 @@ smart-electricity-management/
 │
 ├── api-gateway/
 │
-├── config-server/
-│
 ├── auth-service/
 │
 ├── user-service/
@@ -229,7 +227,6 @@ docker compose up --build
 
 | Service | Port |
 |---|---|
-| config-server | 8888 |
 | api-gateway | 8080 |
 | auth-service | 8081 |
 | user-service | 8082 |

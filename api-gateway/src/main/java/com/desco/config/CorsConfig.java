@@ -2,6 +2,8 @@ package com.desco.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -12,13 +14,39 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
+    /**
+     * Must run BEFORE Spring Security's own chain.
+     *
+     * A plain @Bean WebFilter defaults to Ordered.LOWEST_PRECEDENCE, while the
+     * security chain sits at -100 (SecurityProperties.DEFAULT_FILTER_ORDER).
+     * JwtAuthFilter is installed inside that chain and short-circuits an invalid
+     * or expired token with a bare 401 — so with the default ordering this filter
+     * never ran on exactly those responses, and every 401 reached the browser
+     * with no Access-Control-Allow-Origin header at all.
+     *
+     * To JavaScript that is not a 401, it is an opaque network error
+     * (net::ERR_FAILED), which means the frontend's refresh-on-401 interceptor
+     * could never fire and a merely-expired access token logged the user out.
+     * curl does not enforce CORS, which is why direct testing never caught it.
+     *
+     * CorsWebFilter writes its headers onto the response before delegating down
+     * the chain, so running first means they survive any later short-circuit.
+     */
     @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOriginPatterns(List.of(
-                "http://localhost:3000",
-                "http://localhost:5173",    // Vite dev server
+                // Any localhost port, not just 5173. Vite silently falls back to
+                // 5174 (then 5175, ...) when its default port is taken, and with a
+                // single pinned origin every API call from that fallback port fails
+                // CORS — which surfaces in the browser as an opaque network error
+                // indistinguishable from "the gateway is down". Matching the whole
+                // dev port range removes a failure mode that costs real debugging
+                // time and proves nothing.
+                "http://localhost:[*]",
+                "http://127.0.0.1:[*]",
                 "https://*.vercel.app"
         ));
 

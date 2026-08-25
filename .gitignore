@@ -6,6 +6,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.iml
+.claude
 
 # Java / Maven
 target/
@@ -26,14 +27,23 @@ npm-debug.log*
 # Docker
 *.pid
 
-# Local documentation
-CONTEXT.md
+# Local documentation — working notes kept out of the repo on purpose.
+# These patterns have no slash, so they match at any depth (including
+# frontend/), which is also where frontend/.gitignore lists the last two.
+DOCUMENTATION_BACKEND.md
+DOCUMENTATION_FRONTEND.md
+FRONTEND_SKILL.md
 .logs/
+frontend/DOCUMENTATION_FRONTEND.md
 
-# Contains hardcoded Bash allowlist entries with live credentials embedded in
-# command strings (e.g. psql connection args) — never commit this file.
-.claude/settings.json
+# db/ is local-only by default (dumps, scratch SQL, anything with credentials),
+# but migrations and the generator MUST ship — a migration nobody else can pull
+# is not a migration. Note the pattern excludes the directory *contents*, not
+# the directory: git cannot re-include a file inside an excluded directory.
+/db/*
 
-
-#test scripts
+# Test scripts stay local. Anything that is part of running or shipping the
+# system must be rescued by name — a blanket *.sh silently drops new scripts,
+# which is exactly what happened when run-local.sh was renamed to deploy.sh.
 *.sh
+!deploy.sh

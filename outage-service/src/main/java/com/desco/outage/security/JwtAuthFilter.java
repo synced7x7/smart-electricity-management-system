@@ -48,8 +48,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
                 }
 
+                // Principal carries the userId too — outages.created_by is NOT NULL and
+                // has to record who scheduled it; an email-only principal couldn't supply it.
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        email,
+                        new AuthenticatedUser(jwtService.extractUserId(token), email),
                         null,
                         authorities
                 );

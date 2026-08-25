@@ -43,6 +43,9 @@ class OutageServiceTest {
     private Outage sampleOutage;
     private OutageRequest sampleRequest;
     private UUID outageId;
+
+    /** Stands in for the authenticated admin's id, which now populates outages.created_by. */
+    private final UUID createdBy = UUID.randomUUID();
     private LocalDateTime now;
 
     @BeforeEach
@@ -77,16 +80,16 @@ class OutageServiceTest {
     @Test
     @DisplayName("createOutage saves entity, notifies client, and returns DTO")
     void testCreateOutage_Success() {
-        when(outageRepository.save(any(Outage.class))).thenReturn(sampleOutage);
+        when(outageRepository.saveAndFlush(any(Outage.class))).thenReturn(sampleOutage);
 
-        OutageResponse response = outageService.createOutage(sampleRequest);
+        OutageResponse response = outageService.createOutage(sampleRequest, createdBy);
 
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(outageId);
         assertThat(response.getArea()).isEqualTo(Area.DHANMONDI);
         assertThat(response.getStatus()).isEqualTo(OutageStatus.SCHEDULED);
 
-        verify(outageRepository, times(1)).save(any(Outage.class));
+        verify(outageRepository, times(1)).saveAndFlush(any(Outage.class));
         verify(notificationClient, times(1)).sendOutageNotification(eq("DHANMONDI"), anyString(), anyString(), eq(outageId));
     }
 
@@ -95,11 +98,13 @@ class OutageServiceTest {
     void testCreateOutage_InvalidTimes() {
         sampleRequest.setEndTime(now.minusHours(1));
 
-        assertThatThrownBy(() -> outageService.createOutage(sampleRequest))
+        assertThatThrownBy(() -> outageService.createOutage(sampleRequest, createdBy))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("End time must be after start time");
 
-        verify(outageRepository, never()).save(any(Outage.class));
+        // Must assert on saveAndFlush — that is what the create path calls. Asserting
+        // never().save(...) here would pass no matter what and prove nothing.
+        verify(outageRepository, never()).saveAndFlush(any(Outage.class));
     }
 
     @Test
@@ -126,7 +131,7 @@ class OutageServiceTest {
     @Test
     @DisplayName("getOutagesByArea filters properly")
     void testGetOutagesByArea() {
-        when(outageRepository.findByAreaOrderByStartTimeDesc(Area.DHANMONDI))
+        when(outageRepository.findByAreaOrderByStartTimeDesc("DHANMONDI"))
                 .thenReturn(List.of(sampleOutage));
 
         List<OutageResponse> list = outageService.getOutagesByArea(Area.DHANMONDI);

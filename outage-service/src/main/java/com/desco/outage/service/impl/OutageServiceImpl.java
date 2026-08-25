@@ -28,7 +28,7 @@ public class OutageServiceImpl implements OutageService {
 
     @Override
     @Transactional
-    public OutageResponse createOutage(OutageRequest request) {
+    public OutageResponse createOutage(OutageRequest request, UUID createdBy) {
         if (request.getEndTime().isBefore(request.getStartTime())) {
             throw new IllegalArgumentException("End time must be after start time");
         }
@@ -43,9 +43,13 @@ public class OutageServiceImpl implements OutageService {
                 .reason(request.getReason())
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
+                .createdBy(createdBy)
                 .build();
 
-        Outage saved = outageRepository.save(outage);
+        // saveAndFlush (not save): @CreationTimestamp/@UpdateTimestamp values are only
+        // generated once the INSERT actually runs. A plain save() inside @Transactional
+        // defers it to commit, so the mapped response would carry null timestamps.
+        Outage saved = outageRepository.saveAndFlush(outage);
         log.info("Created outage {} for area {}", saved.getId(), saved.getArea());
 
         // Notify area
@@ -75,7 +79,7 @@ public class OutageServiceImpl implements OutageService {
     @Override
     @Transactional(readOnly = true)
     public List<OutageResponse> getOutagesByArea(Area area) {
-        return outageRepository.findByAreaOrderByStartTimeDesc(area).stream()
+        return outageRepository.findByAreaOrderByStartTimeDesc(area.name()).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -84,14 +88,14 @@ public class OutageServiceImpl implements OutageService {
     @Transactional(readOnly = true)
     public List<OutageResponse> getActiveOutages() {
         return outageRepository.findByStatusInOrderByStartTimeDesc(
-                List.of(OutageStatus.SCHEDULED, OutageStatus.ONGOING)
+                List.of(OutageStatus.SCHEDULED.name(), OutageStatus.ONGOING.name())
         ).stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<OutageResponse> getOutagesByStatus(OutageStatus status) {
-        return outageRepository.findByStatusOrderByStartTimeDesc(status).stream()
+        return outageRepository.findByStatusOrderByStartTimeDesc(status.name()).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }

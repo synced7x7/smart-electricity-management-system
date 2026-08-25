@@ -9,7 +9,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -17,8 +16,16 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+// Wired into the security chain by SecurityConfig via
+// addFilterAt(..., SecurityWebFiltersOrder.AUTHENTICATION) — deliberately NOT a
+// @Component. Spring Boot auto-registers every WebFilter bean as an independent
+// global filter ordered by its own Ordered value; Spring Security's own chain is
+// fixed at @Order(-100) (SecurityProperties.DEFAULT_FILTER_ORDER), which runs
+// before any global filter with a "less negative" order. A standalone bean here
+// would run after Security's authorizeExchange() had already rejected the
+// exchange for lacking an authenticated context — the filter needs to run
+// inside Security's own pipeline, before that check, not beside it.
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class JwtAuthFilter implements WebFilter {
 

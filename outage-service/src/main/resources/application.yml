@@ -2,31 +2,31 @@ spring:
   application:
     name: outage-service
 
-  config:
-    import: "optional:configserver:${CONFIG_SERVER_URI:http://config-server:8888}"
-
-  cloud:
-    config:
-      username: ${CONFIG_SERVER_USERNAME:config-user}
-      password: ${CONFIG_SERVER_PASSWORD:config-secret}
-      fail-fast: false
-      retry:
-        initial-interval: 1000
-        max-attempts: 6
-        max-interval: 2000
-
   datasource:
     url: ${DB_URL:jdbc:postgresql://aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres?sslmode=require}
     username: ${DB_USERNAME:postgres.zwymhosocnbkwjhyirui}
-    password: ${DB_PASSWORD:IEXR4qRJzjpLD0Bh}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 5
-      minimum-idle: 1
+      # Supabase's session-mode pooler caps total clients at ~15 across ALL
+      # services. Seven services x 5 was 35 potential connections, and under
+      # load that saturates the pooler — auth-service and notification-service
+      # both failed to BOOT with "Connect timed out" during a heavy test run.
+      #
+      # minimum-idle: 0 matters more than the max: an idle service then holds
+      # no connection at all, so the practical concurrent total stays well
+      # below the cap instead of every service squatting on five.
+      maximum-pool-size: 3
+      minimum-idle: 0
+      idle-timeout: 30000
+      connection-timeout: 20000
 
   jpa:
     hibernate:
-      ddl-auto: update
+      # Schema is hand-designed and managed externally in Supabase (native enum
+      # types, FK constraints, triggers). `update` previously corrupted this schema by
+      # silently adding duplicate/invented columns — never let Hibernate alter it.
+      ddl-auto: none
     show-sql: false
     open-in-view: false
     properties:

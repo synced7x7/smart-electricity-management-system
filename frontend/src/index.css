@@ -1,1 +1,262 @@
 @import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   DESCO — design tokens
+
+   Warm paper + spruce. Deliberately not a SaaS dashboard: the customer side
+   should read like a utility bill you trust, so the ground is paper-warm
+   rather than blue-grey, and the only saturated colour in the whole system
+   carries meaning (money settled, outage urgency, service down).
+
+   THEMING — why this is split into two layers.
+
+   Tailwind v4's `@theme` may only appear at the top level. Nesting it inside
+   `@media (prefers-color-scheme: dark)` does NOT scope it: Tailwind hoists the
+   declarations and the last one wins unconditionally, so a dark `@theme` block
+   silently becomes the *only* palette and light mode never renders at all.
+
+   So the palette lives in ordinary custom properties that cascade normally,
+   and `@theme inline` maps Tailwind's colour names onto them. `inline` is the
+   important part — it makes the generated utilities emit `var(--paper)` rather
+   than baking the value in at build time, which is what lets the same class
+   change colour at runtime.
+   --------------------------------------------------------------------------- */
+
+/* Light palette — the default, and the only place every token is defined. */
+:root {
+  --paper: #faf9f6;
+  --surface: #ffffff;
+  --sunken: #f1efea;
+  --line: #e3dfd7;
+  --line-strong: #cfc9bd;
+
+  --ink: #191a17;
+  --muted: #6a6e68;
+  --faint: #9a9e97;
+
+  --brand: #14574b;
+  --brand-hover: #0e463c;
+  --brand-soft: #e4efea;
+  --brand-ink: #0c3d34;
+
+  --amber: #8a5a10;
+  --amber-soft: #fbf0dc;
+  --danger: #9f2f22;
+  --danger-soft: #fbe8e4;
+  --info: #1f4e79;
+  --info-soft: #e4edf6;
+}
+
+/* Dark palette. Only the tokens change — never a colour's sole definition. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #101210;
+    --surface: #181a18;
+    --sunken: #1f221f;
+    --line: #2c302c;
+    --line-strong: #3d423d;
+
+    --ink: #f0f1ee;
+    --muted: #9ba098;
+    --faint: #6e736c;
+
+    --brand: #5fcbb0;
+    --brand-hover: #7bd9c1;
+    --brand-soft: #12302a;
+    --brand-ink: #a8e6d6;
+
+    --amber: #e8b463;
+    --amber-soft: #302610;
+    --danger: #ee8878;
+    --danger-soft: #371810;
+    --info: #8fbbe3;
+    --info-soft: #132638;
+  }
+}
+
+/* An explicit choice wins over the system preference, in both directions. */
+:root[data-theme="dark"] {
+  --paper: #101210;
+  --surface: #181a18;
+  --sunken: #1f221f;
+  --line: #2c302c;
+  --line-strong: #3d423d;
+
+  --ink: #f0f1ee;
+  --muted: #9ba098;
+  --faint: #6e736c;
+
+  --brand: #5fcbb0;
+  --brand-hover: #7bd9c1;
+  --brand-soft: #12302a;
+  --brand-ink: #a8e6d6;
+
+  --amber: #e8b463;
+  --amber-soft: #302610;
+  --danger: #ee8878;
+  --danger-soft: #371810;
+  --info: #8fbbe3;
+  --info-soft: #132638;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Stronger than the CSS built-ins — the defaults lack the punch that makes
+     motion read as intentional rather than incidental. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+html {
+  background: var(--paper);
+  color-scheme: light dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tracking is size-specific: large text reads too loose as it grows, small
+   text reads too tight. One global letter-spacing would be wrong somewhere. */
+h1,
+h2 {
+  letter-spacing: -0.021em;
+  line-height: 1.15;
+}
+
+h3,
+h4 {
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+}
+
+/* Money and meter readings must align down the column and never reflow as
+   digits change. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+
+   Everything below is a CSS transition rather than a keyframe or a JS spring:
+   transitions retarget mid-flight, run off the main thread, and this is a
+   dashboard that should feel crisp, not playful.
+   --------------------------------------------------------------------------- */
+@keyframes desco-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes desco-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes desco-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-rise {
+  animation: desco-rise 260ms var(--ease-out-strong) both;
+}
+
+.animate-scale-in {
+  animation: desco-scale-in 160ms var(--ease-out-strong) both;
+}
+
+.animate-spin-fast {
+  animation: desco-spin 600ms linear infinite;
+}
+
+/* Stagger is decorative and short — long delays make a dashboard feel slow. */
+.stagger > * {
+  animation: desco-rise 260ms var(--ease-out-strong) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 40ms; }
+.stagger > *:nth-child(3) { animation-delay: 80ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; }
+.stagger > *:nth-child(6) { animation-delay: 200ms; }
+
+/* Reduced motion means gentler, not absent: opacity still communicates that
+   something arrived, but nothing travels. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-scale-in,
+  .stagger > * {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .animate-spin-fast {
+    animation: desco-spin 900ms linear infinite !important;
+  }
+}

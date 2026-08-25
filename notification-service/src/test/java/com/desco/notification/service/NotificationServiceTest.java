@@ -70,7 +70,7 @@ class NotificationServiceTest {
     @Test
     @DisplayName("createNotification saves and returns notification DTO")
     void testCreateNotification_Success() {
-        when(notificationRepository.save(any(Notification.class))).thenReturn(sampleNotification);
+        when(notificationRepository.saveAndFlush(any(Notification.class))).thenReturn(sampleNotification);
 
         NotificationResponse response = notificationService.createNotification(sampleRequest);
 
@@ -79,7 +79,7 @@ class NotificationServiceTest {
         assertThat(response.getTitle()).isEqualTo("Power Outage Alert");
         assertThat(response.getIsRead()).isFalse();
 
-        verify(notificationRepository, times(1)).save(any(Notification.class));
+        verify(notificationRepository, times(1)).saveAndFlush(any(Notification.class));
     }
 
     @Test

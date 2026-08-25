@@ -39,7 +39,9 @@ public class ComplaintServiceImpl implements ComplaintService {
                 .status(ComplaintStatus.PENDING)
                 .build();
 
-        Complaint saved = complaintRepository.save(complaint);
+        // saveAndFlush (not save): @CreationTimestamp values are only generated once the
+        // INSERT actually runs; a plain save() defers it and the response shows nulls.
+        Complaint saved = complaintRepository.saveAndFlush(complaint);
         log.info("Saved complaint {} for user {} in area {}", saved.getId(), saved.getUserId(), saved.getArea());
 
         // Notify user of complaint submission
@@ -77,7 +79,7 @@ public class ComplaintServiceImpl implements ComplaintService {
     @Override
     @Transactional(readOnly = true)
     public List<ComplaintResponse> getComplaintsByArea(Area area) {
-        return complaintRepository.findByAreaOrderByCreatedAtDesc(area).stream()
+        return complaintRepository.findByAreaOrderByCreatedAtDesc(area.name()).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -85,7 +87,7 @@ public class ComplaintServiceImpl implements ComplaintService {
     @Override
     @Transactional(readOnly = true)
     public List<ComplaintResponse> getComplaintsByStatus(ComplaintStatus status) {
-        return complaintRepository.findByStatusOrderByCreatedAtDesc(status).stream()
+        return complaintRepository.findByStatusOrderByCreatedAtDesc(status.name()).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
