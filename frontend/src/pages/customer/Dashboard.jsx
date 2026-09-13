@@ -17,7 +17,7 @@ import {
 import { useAsync } from '../../lib/useAsync'
 import { getUnreadCount } from '../../services/notifications.service'
 import { getHistory } from '../../services/payments.service'
-import { getActive, getByArea, sortByUrgency } from '../../services/outages.service'
+import { getActive, getByArea } from '../../services/outages.service'
 import { displayName } from '../../services/users.service'
 
 export default function Dashboard() {
@@ -39,8 +39,9 @@ export default function Dashboard() {
     (p) => p.billMonth === thisMonth && p.status === 'SUCCESS',
   )
   const lastPayment = history.find((p) => p.status === 'SUCCESS')
-
-  const ranked = sortByUrgency(outages.data || [])
+  const now = new Date()
+  const ranked = (outages.data || []).filter((o) => !o.endTime || new Date(o.endTime) > now)
+  
   const liveNow = ranked.filter((o) => o.status === 'ONGOING')
 
   return (
