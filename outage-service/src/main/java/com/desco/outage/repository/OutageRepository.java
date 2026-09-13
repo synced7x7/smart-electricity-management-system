@@ -34,6 +34,8 @@ public interface OutageRepository extends JpaRepository<Outage, UUID> {
     @Query(value = """
             SELECT * FROM outages
             WHERE area = CAST(:area AS area_name)
+              AND CAST(status AS text) IN ('SCHEDULED', 'ONGOING')
+              AND end_time >= CURRENT_TIMESTAMP
             ORDER BY start_time DESC
             """, nativeQuery = true)
     List<Outage> findByAreaOrderByStartTimeDesc(@Param("area") String area);
@@ -52,6 +54,7 @@ public interface OutageRepository extends JpaRepository<Outage, UUID> {
     @Query(value = """
             SELECT * FROM outages
             WHERE CAST(status AS text) IN (:statuses)
+              AND end_time >= CURRENT_TIMESTAMP
             ORDER BY start_time DESC
             """, nativeQuery = true)
     List<Outage> findByStatusInOrderByStartTimeDesc(@Param("statuses") List<String> statuses);
