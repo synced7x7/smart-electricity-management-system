@@ -34,6 +34,7 @@ public class SecurityConfig {
                     "/api/auth/login",
                     "/api/auth/register",
                     "/actuator/**").permitAll() //health/monitoring EP
+                .pathMatchers(HttpMethod.GET, "/api/outages/**").permitAll()
                 .anyExchange().authenticated() //don't require authorizing
             )
             // Runs inside Security's own pipeline, before the authorizeExchange
