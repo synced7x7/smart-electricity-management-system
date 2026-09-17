@@ -35,6 +35,9 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/outages/ping").permitAll()
+                        // Outage schedules are public service information. Customer
+                        // reads must not fail when an access token lacks optional claims.
+                        .requestMatchers(HttpMethod.GET, "/api/outages/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
