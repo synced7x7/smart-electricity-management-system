@@ -13,17 +13,12 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/**
- * Without this, Spring Security rejects unauthenticated requests inside the filter chain
- * and returns an EMPTY 403 body — @RestControllerAdvice never runs, so the caller gets no
- * explanation. This returns a proper JSON 401 instead.
- */
 @Component
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper(); //converts Java objects to JSON 
 
-    @Override
+    @Override //commence is automatically called when an authentication fails
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {

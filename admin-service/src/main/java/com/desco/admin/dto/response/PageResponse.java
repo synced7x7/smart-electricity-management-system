@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 import java.util.function.Function;
 
-/** Stable pagination envelope — avoids serialising Spring's Page implementation directly. */
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,7 +22,7 @@ public class PageResponse<T> {
     private boolean first;
     private boolean last;
 
-    public static <E, T> PageResponse<T> from(Page<E> source, Function<E, T> mapper) {
+    public static <E, T> PageResponse<T> from(Page<E> source, Function<E, T> mapper) { //convets page response to DTO
         return PageResponse.<T>builder()
                 .content(source.getContent().stream().map(mapper).toList())
                 .page(source.getNumber())

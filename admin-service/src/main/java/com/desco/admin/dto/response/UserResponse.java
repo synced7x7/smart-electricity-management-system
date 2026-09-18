@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/** Admin-facing view of a user. Deliberately excludes password_hash. */
+
 @Data
 @Builder
 @NoArgsConstructor

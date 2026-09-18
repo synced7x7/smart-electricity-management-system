@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/** Returns a JSON 403 when an authenticated non-admin hits an admin endpoint. */
+
 @Component
 public class RestAccessDeniedHandler implements AccessDeniedHandler {
 

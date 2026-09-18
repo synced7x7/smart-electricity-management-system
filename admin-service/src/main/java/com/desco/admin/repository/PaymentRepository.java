@@ -19,7 +19,6 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     List<Payment> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
-    /** Native query + CAST because "status" is a PostgreSQL enum. */
     @Query(value = "SELECT COUNT(*) FROM payments WHERE status = CAST(:status AS payment_status)",
            nativeQuery = true)
     long countByStatus(@Param("status") String status);

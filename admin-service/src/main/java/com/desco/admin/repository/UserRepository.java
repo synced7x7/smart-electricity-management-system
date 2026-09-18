@@ -21,11 +21,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Page<User> findByIsActive(Boolean isActive, Pageable pageable);
 
-    /**
-     * Native query: "area" is a PostgreSQL enum, so grouping is done on its text
-     * representation. A derived query would bind the parameter as varchar and fail
-     * with `operator does not exist: area_name = character varying`.
-     */
+
     @Query(value = """
             SELECT COALESCE(CAST(area AS text), 'UNASSIGNED') AS area, COUNT(*) AS total
             FROM users
@@ -38,11 +34,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
            nativeQuery = true)
     long countByRole(@Param("role") String role);
 
-    /**
-     * Counts only ADMINs who can still log in. Used by the "don't lock everyone out"
-     * guard — counting inactive admins there would let the last usable admin be
-     * deactivated as long as some disabled admin row existed.
-     */
     @Query(value = """
             SELECT COUNT(*) FROM users
             WHERE role = CAST(:role AS user_role) AND is_active = TRUE
