@@ -16,22 +16,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-// Wired into the security chain by SecurityConfig via
-// addFilterAt(..., SecurityWebFiltersOrder.AUTHENTICATION) — deliberately NOT a
-// @Component. Spring Boot auto-registers every WebFilter bean as an independent
-// global filter ordered by its own Ordered value; Spring Security's own chain is
-// fixed at @Order(-100) (SecurityProperties.DEFAULT_FILTER_ORDER), which runs
-// before any global filter with a "less negative" order. A standalone bean here
-// would run after Security's authorizeExchange() had already rejected the
-// exchange for lacking an authenticated context — the filter needs to run
-// inside Security's own pipeline, before that check, not beside it.
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthFilter implements WebFilter {
 
     private final JwtUtil jwtUtil;
 
-    //Not returning actual data (async)
     @Override
     public @NonNull Mono<Void> filter(@NonNull ServerWebExchange exchange,
                                       @NonNull WebFilterChain chain) {
@@ -40,7 +30,7 @@ public class JwtAuthFilter implements WebFilter {
             .getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return chain.filter(exchange);
+            return chain.filter(exchange); //pass the request to the next filter
         }
 
         String token = authHeader.substring(7);
@@ -64,6 +54,6 @@ public class JwtAuthFilter implements WebFilter {
         log.debug("Authenticated user '{}' with role '{}' at gateway", email, role);
 
         return chain.filter(exchange)
-            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+            .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth)); //make the context available to the spring security chain
     }
 }

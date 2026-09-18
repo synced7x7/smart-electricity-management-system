@@ -8,14 +8,6 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      # Supabase's session-mode pooler caps total clients at ~15 across ALL
-      # services. Seven services x 5 was 35 potential connections, and under
-      # load that saturates the pooler — auth-service and notification-service
-      # both failed to BOOT with "Connect timed out" during a heavy test run.
-      #
-      # minimum-idle: 0 matters more than the max: an idle service then holds
-      # no connection at all, so the practical concurrent total stays well
-      # below the cap instead of every service squatting on five.
       maximum-pool-size: 3
       minimum-idle: 0
       idle-timeout: 30000
@@ -23,7 +15,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none          # schema is managed externally (db/), never by Hibernate
+      ddl-auto: none         
     show-sql: false
     properties:
       hibernate:
@@ -32,15 +24,6 @@ spring:
 server:
   port: 8081
 
-# Role-based registration.
-#
-# A registration request carrying a matching `adminKey` creates an ADMIN account
-# instead of a USER. The key lives only in the environment — there is deliberately
-# NO fallback value, because a committed default would be a public admin password.
-#
-# Unset or blank => admin self-registration is DISABLED and every registration
-# produces a USER, which is the safe posture for any environment that has not
-# explicitly opted in.
 admin:
   registration-key: ${ADMIN_REGISTRATION_KEY:}
 

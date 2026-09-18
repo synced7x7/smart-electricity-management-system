@@ -45,10 +45,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                // CORS is handled once, at api-gateway — see CorsConfig there.
-                // A second Access-Control-Allow-Origin header from this service would
-                // make the browser reject the response with duplicate CORS headers.
-                .cors(cors -> cors.disable())
+                .cors(cors -> cors.disable()) //handled at api gateway
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
