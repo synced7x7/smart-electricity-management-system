@@ -14,10 +14,6 @@ public class RestClientConfig {
     @Value("${desco.health-timeout-ms:1500}")
     private int healthTimeoutMs;
 
-    /**
-     * Short timeouts on purpose: the dashboard polls sibling services for their health and
-     * must stay responsive even when several of them are down.
-     */
     @Bean
     public RestClient healthRestClient() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();

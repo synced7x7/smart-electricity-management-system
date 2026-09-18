@@ -26,16 +26,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                // CORS is handled once, at api-gateway — see CorsConfig there.
-                // A second Access-Control-Allow-Origin header from this service would
-                // make the browser reject the response with duplicate CORS headers.
+                // CORS is handled once, at api-gateway so we disable cors here 
                 .cors(cors -> cors.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll() //health check
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Every admin endpoint requires the ADMIN role, not merely a valid token.
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()//generalied rule if options are used
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex

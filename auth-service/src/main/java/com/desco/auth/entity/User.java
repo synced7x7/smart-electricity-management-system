@@ -27,13 +27,11 @@ public class User {
     @Column(nullable = false)
     private String passwordHash;
 
-    // "role" is a native PostgreSQL enum (user_role); cast the varchar bind parameter to it.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "user_role")
     @ColumnTransformer(write = "?::user_role")
     private UserRole role = UserRole.USER;
 
-    // "area" is a native PostgreSQL enum (area_name); same treatment.
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "area_name")
     @ColumnTransformer(write = "?::area_name")
@@ -55,15 +53,8 @@ public class User {
     }
 
     public enum AreaName {
-        // The 8 original DESCO zones (Dhaka neighbourhoods). Kept because live
-        // rows reference them and Postgres enums have no DROP VALUE.
         UTTARA, GULSHAN, BANANI, DHANMONDI,
         BASHUNDHARA, MIRPUR, BANASREE, BARIDHARA,
-
-        // All 64 districts of Bangladesh, by division. Requires
-        // db/02_area_nationwide.sql to have been applied — without it
-        // Postgres rejects these labels and the insert fails as a 500.
-        // Barishal
         BARGUNA, BARISHAL, BHOLA, JHALOKATI,
         PATUAKHALI, PIROJPUR,
         // Chattogram

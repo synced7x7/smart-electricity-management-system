@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-/** Aggregate snapshot rendered by the admin dashboard. */
 @Data
 @Builder
 @NoArgsConstructor
@@ -33,7 +32,6 @@ public class DashboardResponse {
         private long active;
         private long inactive;
         private long admins;
-        /** area label -> user count ("UNASSIGNED" for users with no area). */
         private Map<String, Long> byArea;
     }
 

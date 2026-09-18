@@ -36,24 +36,7 @@ public class GatewayConfig {
     @Value("${ADMIN_SERVICE_URL:http://admin-service:8087}")
     private String adminServiceUrl;
 
-    /**
-     * outage-service, notification-service and complaint-service each declare their
-     * own CorsConfigurationSource allowing http://localhost:5173, and CorsConfig in
-     * this package adds the very same header again as the response is proxied back.
-     * Those three routes therefore answered a browser with TWO identical
-     * Access-Control-Allow-Origin headers, which every browser rejects outright
-     * ("contains multiple values") — the frontend could not read them at all.
-     *
-     * The four services owned by 220041151 already had their own CORS removed for
-     * exactly this reason; these three are teammate-owned, so the duplicate is
-     * collapsed here rather than by editing their modules.
-     *
-     * This has to be applied per route rather than through
-     * spring.cloud.gateway.default-filters: default filters are only injected by
-     * RouteDefinitionRouteLocator, which handles routes declared as *properties*.
-     * The routes below are built programmatically and never pass through it, so the
-     * property form is silently inert.
-     */
+    //preventing duplicate cors initialization 
     private static final String DUPLICATED_CORS_HEADERS =
         "Access-Control-Allow-Origin Access-Control-Allow-Credentials";
 

@@ -51,7 +51,7 @@ public class AdminServiceImpl implements AdminService {
     private final OutageRepository outageRepository;
     private final ServiceHealthClient serviceHealthClient;
 
-    /** Small fixed pool so the six health probes overlap instead of queueing. */
+
     private final ExecutorService healthCheckExecutor = Executors.newFixedThreadPool(6);
 
     @Value("${desco.services.auth}")         private String authUrl;
@@ -61,10 +61,7 @@ public class AdminServiceImpl implements AdminService {
     @Value("${desco.services.complaint}")    private String complaintUrl;
     @Value("${desco.services.payment}")      private String paymentUrl;
 
-    // =========================================================================
     //  Dashboard
-    // =========================================================================
-
     @Override
     @Transactional(readOnly = true)
     public DashboardResponse getDashboard() {
@@ -142,11 +139,7 @@ public class AdminServiceImpl implements AdminService {
                 .build();
     }
 
-    /**
-     * Health checks run in parallel. Sequentially, six services each allowed a 4s timeout
-     * could stall the dashboard for 24s — and most of them are expected to be down, so the
-     * slow path is the common one.
-     */
+    //Health checks of all microservices
     @Override
     public List<ServiceStatus> getServiceStatuses() {
         List<Map.Entry<String, String>> targets = List.of(
@@ -166,10 +159,7 @@ public class AdminServiceImpl implements AdminService {
         return futures.stream().map(CompletableFuture::join).toList();
     }
 
-    // =========================================================================
     //  Users
-    // =========================================================================
-
     @Override
     @Transactional(readOnly = true)
     public PageResponse<UserResponse> listUsers(Boolean isActive, Pageable pageable) {
@@ -190,13 +180,7 @@ public class AdminServiceImpl implements AdminService {
     public UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request) {
         User user = findUser(userId);
 
-        // Guard against locking every administrator out of the system. This must count
-        // only ACTIVE admins: counting disabled ones too would allow the last usable
-        // admin to be deactivated whenever some already-disabled admin row existed.
-        if (Boolean.FALSE.equals(request.getIsActive())
-                && user.getRole() == UserRole.ADMIN
-                && Boolean.TRUE.equals(user.getIsActive())
-                && userRepository.countActiveByRole(UserRole.ADMIN.name()) <= 1) {
+        if (userRepository.countActiveByRole(UserRole.ADMIN.name()) <= 1) {
             throw new IllegalArgumentException(
                     "Cannot deactivate the only remaining active ADMIN account");
         }
@@ -208,18 +192,15 @@ public class AdminServiceImpl implements AdminService {
         return toResponse(saved);
     }
 
-    // =========================================================================
-    //  Complaints
-    // =========================================================================
-
+    //Complaints
     @Override
     @Transactional(readOnly = true)
     public PageResponse<ComplaintResponse> listComplaints(String status, String area, Pageable pageable) {
         Page<Complaint> page = complaintRepository.search(
-                normalise(status, ComplaintStatus.class, "status"),
+                normalise(status, ComplaintStatus.class, "status"),//"PENDING" → ComplaintStatus.PENDING
                 normalise(area, AreaName.class, "area"),
                 pageable);
-        return PageResponse.from(page, this::toResponse);
+        return PageResponse.from(page, this::toResponse); //converting page to DTO
     }
 
     @Override
@@ -241,10 +222,7 @@ public class AdminServiceImpl implements AdminService {
         return toResponse(saved);
     }
 
-    // =========================================================================
     //  Outages
-    // =========================================================================
-
     @Override
     @Transactional(readOnly = true)
     public PageResponse<OutageResponse> listOutages(String status, String area, Pageable pageable) {
@@ -294,10 +272,7 @@ public class AdminServiceImpl implements AdminService {
         return toResponse(saved);
     }
 
-    // =========================================================================
     //  Payments
-    // =========================================================================
-
     @Override
     @Transactional(readOnly = true)
     public PageResponse<PaymentResponse> listPayments(Pageable pageable) {
@@ -312,10 +287,7 @@ public class AdminServiceImpl implements AdminService {
                 .map(this::toResponse).toList();
     }
 
-    // =========================================================================
-    //  Helpers
-    // =========================================================================
-
+    // Utility
     private User findUser(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -331,11 +303,6 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Outage not found with id: " + id));
     }
 
-    /**
-     * Validates an optional enum filter and returns it upper-cased, or null for "no
-     * filter". Rejecting unknown values here produces a helpful 400 instead of letting
-     * PostgreSQL fail on an invalid enum cast.
-     */
     private <E extends Enum<E>> String normalise(String value, Class<E> type, String field) {
         if (value == null || value.isBlank()) {
             return null;
@@ -350,7 +317,7 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    /** Converts native (label, count) rows into an ordered map. */
+    /** Converts native (label, count) rows into an ordered map. cause the db returns rows but mapping is efficient to handle cause we dont need to iterate the whole result set. */ 
     private Map<String, Long> toCountMap(List<Object[]> rows) {
         Map<String, Long> map = new LinkedHashMap<>();
         for (Object[] row : rows) {

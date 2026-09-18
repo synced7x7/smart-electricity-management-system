@@ -12,27 +12,25 @@ import java.util.UUID;
 
 public interface AdminService {
 
-    /** Aggregate snapshot across users, payments, complaints, outages and service health. */
     DashboardResponse getDashboard();
 
-    /** Live reachability of every sibling microservice. */
     List<ServiceStatus> getServiceStatuses();
 
-    // --- users ---------------------------------------------------------------
+    // users 
     PageResponse<UserResponse> listUsers(Boolean isActive, Pageable pageable);
 
     UserResponse getUser(UUID userId);
 
     UserResponse updateUserStatus(UUID userId, UpdateUserStatusRequest request);
 
-    // --- complaints ----------------------------------------------------------
+    // complaints 
     PageResponse<ComplaintResponse> listComplaints(String status, String area, Pageable pageable);
 
     ComplaintResponse getComplaint(UUID complaintId);
 
     ComplaintResponse updateComplaint(UUID complaintId, UpdateComplaintRequest request);
 
-    // --- outages -------------------------------------------------------------
+    // outages
     PageResponse<OutageResponse> listOutages(String status, String area, Pageable pageable);
 
     OutageResponse getOutage(UUID outageId);
@@ -41,7 +39,7 @@ public interface AdminService {
 
     OutageResponse updateOutageStatus(UUID outageId, UpdateOutageStatusRequest request);
 
-    // --- payments ------------------------------------------------------------
+    // payments 
     PageResponse<PaymentResponse> listPayments(Pageable pageable);
 
     List<PaymentResponse> getUserPayments(UUID userId);

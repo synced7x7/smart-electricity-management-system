@@ -30,13 +30,11 @@ public class Complaint {
     @Column(nullable = false, columnDefinition = "text")
     private String description;
 
-    // Native PostgreSQL enum (area_name).
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "area_name")
     @ColumnTransformer(write = "?::area_name")
     private AreaName area;
 
-    // Native PostgreSQL enum (complaint_status) — admins update this field.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "complaint_status")
     @ColumnTransformer(write = "?::complaint_status")

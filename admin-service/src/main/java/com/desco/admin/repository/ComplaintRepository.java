@@ -16,10 +16,7 @@ public interface ComplaintRepository extends JpaRepository<Complaint, UUID> {
 
     Page<Complaint> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    /**
-     * Filtering by the native enum columns needs explicit casts. NULL parameters mean
-     * "no filter", which keeps this a single query instead of four derived ones.
-     */
+    
     @Query(value = """
             SELECT * FROM complaints
             WHERE (:status IS NULL OR status = CAST(:status AS complaint_status))

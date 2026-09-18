@@ -6,14 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-/**
- * Polls a sibling microservice's actuator health endpoint.
- *
- * Several services in this system (user, outage, notification, complaint) are still
- * placeholders owned by other team members, so being unreachable is the NORMAL case.
- * Failures are therefore reported as DOWN rather than propagated as errors — the
- * dashboard must render regardless.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

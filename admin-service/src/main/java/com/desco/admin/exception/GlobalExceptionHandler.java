@@ -21,20 +21,19 @@ import java.util.Arrays;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    //no user
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage(), "Not Found");
     }
 
-    /**
-     * Without this, a malformed URL such as /api/admin/users/ produces a 500 from the
-     * catch-all handler instead of an honest 404.
-     */
+    //no endpoint
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex) {
         return build(HttpStatus.NOT_FOUND, "No endpoint found for this path", "Not Found");
     }
 
+    //Annotaion validation errors
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
@@ -44,7 +43,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, message, "Validation Error");
     }
 
-    /** Produces a helpful message when an unknown enum value is sent in a JSON body. */
+    // Spring cannot understand the request body, e.g. invalid JSON or enum value
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex) {
         Throwable cause = ex.getCause();
@@ -56,22 +55,20 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Malformed request body", "Validation Error");
     }
 
+    // Spring cannot convert a request parameter to the expected type, e.g. a string to an integer
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return build(HttpStatus.BAD_REQUEST,
                 "Invalid value for '" + ex.getName() + "': " + ex.getValue(), "Validation Error");
     }
 
+    // Catch-all for other IllegalArgumentException thrown by the application
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), "Validation Error");
     }
 
-    /**
-     * A referenced row does not exist (e.g. a payment for a user id that is not in
-     * `users`). Since the foreign keys were added this surfaces here rather than
-     * silently writing an orphaned row — report it as a 400, not a 500.
-     */
+    // Catch-all for database constraint violations, e.g. foreign key or unique constraints
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
         String unsupported = unsupportedEnumValue(ex);
@@ -84,32 +81,30 @@ public class GlobalExceptionHandler {
                 "Constraint Violation");
     }
 
+    // Catch-all for any other unhandled exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobal(Exception ex) {
         String unsupported = unsupportedEnumValue(ex);
         if (unsupported != null) {
             return build(HttpStatus.BAD_REQUEST, unsupported, "Validation Error");
         }
-        // Log the detail; do NOT return it. ex.getMessage() on a JDBC failure contains
-        // the generated SQL and schema names, which should never reach a client.
+     
         log.error("Unhandled exception", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", "Internal Server Error");
     }
 
+    // Helper method to build a ResponseEntity with an ErrorResponse body
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message, String error) {
         return new ResponseEntity<>(
                 new ErrorResponse(status.value(), message, error, LocalDateTime.now()), status);
     }
+
+    // Regex pattern to detect invalid enum values in database constraint violation messages
     private static final Pattern INVALID_ENUM =
             Pattern.compile("invalid input value for enum (\\w+): \"([^\"]*)\"");
 
-    /**
-     * Non-null when the cause chain is Postgres rejecting an enum label it has
-     * never been told about (SQLSTATE 22P02). That happens when the application
-     * ships ahead of its migration: the Java enum knows all 64 districts, the
-     * database still only knows the 8 original DESCO zones. Without this the
-     * caller just gets an opaque 500.
-     */
+
+    // Helper method to check if the exception or any of its causes is a database constraint violation due to an unsupported enum value
     private static String unsupportedEnumValue(Throwable ex) {
         for (Throwable t = ex; t != null; t = t.getCause()) {
             if (t.getMessage() != null) {

@@ -18,12 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * auth-service's JWT carries only the subject (email) and userId — it does NOT include a
- * role claim. The caller's role is therefore resolved from the database on each request.
- * That costs one lookup, but means a demoted or deactivated admin loses access
- * immediately rather than when their token eventually expires.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
