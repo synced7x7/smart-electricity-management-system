@@ -47,9 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setTransactionId(generateTransactionId());
         payment.setStatus(PaymentStatus.PENDING);
 
-        // --- Simulated gateway call ---------------------------------------
-        // A real integration would call bKash/Nagad here. The simulation settles
-        // immediately; any gateway error leaves the row in FAILED so it stays auditable.
+    
         try {
             settleWithGateway(payment);
             payment.setStatus(PaymentStatus.SUCCESS);
@@ -61,8 +59,6 @@ public class PaymentServiceImpl implements PaymentService {
         }
         // ------------------------------------------------------------------
 
-        // saveAndFlush (not save) so @CreationTimestamp is generated before we map the
-        // response — a plain save() defers the INSERT to commit and leaves createdAt null.
         Payment saved = paymentRepository.saveAndFlush(payment);
         log.info("Payment {} recorded for user {} ({} {}) -> {}",
                 saved.getTransactionId(), saved.getUserId(), CURRENCY, saved.getAmount(), saved.getStatus());
@@ -118,17 +114,12 @@ public class PaymentServiceImpl implements PaymentService {
         return (method == null || method.isBlank()) ? DEFAULT_METHOD : method.trim().toUpperCase();
     }
 
-    /**
-     * Transaction IDs must be unique (DB constraint) and readable on a receipt.
-     * Format: TXN-{epochMillis}-{6 random digits}
-     */
+ 
     private String generateTransactionId() {
         return "TXN-" + System.currentTimeMillis() + "-" + String.format("%06d", RANDOM.nextInt(1_000_000));
     }
 
-    /**
-     * Stand-in for a real payment gateway. Always settles in the simulation.
-     */
+  
     private void settleWithGateway(Payment payment) {
         log.debug("Contacting simulated gateway for transaction {}", payment.getTransactionId());
     }

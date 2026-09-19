@@ -9,7 +9,6 @@ import java.util.UUID;
 
 public interface PaymentService {
 
-    /** Simulates paying a bill and persists the resulting transaction. */
     PaymentResponse pay(PaymentRequest request);
 
     PaymentResponse getById(UUID paymentId);

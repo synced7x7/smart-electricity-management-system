@@ -38,7 +38,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = header.substring(BEARER_PREFIX.length());
 
             if (jwtService.validateToken(token)) {
-                // No user table here — identity comes straight from the verified token claims.
                 var authentication = new UsernamePasswordAuthenticationToken(
                         jwtService.extractEmail(token),
                         null,
