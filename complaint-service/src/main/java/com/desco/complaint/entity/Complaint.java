@@ -15,20 +15,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Maps the pre-existing, hand-designed `complaints` table.
- *
- * <p>The Java field names {@code title} and {@code resolutionNotes} are kept (the DTOs
- * and API contract use them) but they map to the ORIGINAL columns {@code subject} and
- * {@code admin_remark}. An earlier run with {@code ddl-auto: update} had added duplicate
- * `title`/`resolution_notes` columns alongside them, which split the data in two:
- * admin-service writes an admin's response to `admin_remark` while this service read
- * `resolution_notes`, so neither ever saw the other's data. Both services now share
- * one column.
- *
- * <p>{@code area} and {@code status} are native PostgreSQL enum types — writes need an
- * explicit cast, otherwise Postgres rejects the varchar bind parameter.
- */
+
 @Entity
 @Table(name = "complaints")
 @Data

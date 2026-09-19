@@ -28,6 +28,5 @@ public class PaymentRequest {
     @DecimalMax(value = "99999999.99", message = "amount exceeds the maximum allowed value")
     private BigDecimal amount;
 
-    /** Optional; defaults to DUMMY_GATEWAY when omitted. */
     private String paymentMethod;
 }

@@ -8,13 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * All fields are optional here — a caller may update just one field at a time. A
- * field left null leaves the stored value unchanged (see
- * UserServiceImpl.updateOwnProfile), it does not clear it. `fullName` and `area`
- * are still required overall (the DB column is NOT NULL), but that's only enforced
- * on first creation — see UserServiceImpl for the exact rule.
- */
+
 @Data
 @Builder
 @NoArgsConstructor

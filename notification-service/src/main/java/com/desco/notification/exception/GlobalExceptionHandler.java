@@ -56,11 +56,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * An unknown enum label in a JSON body (e.g. {"status":"NONSENSE"}) otherwise falls
-     * through to the catch-all and reports 500. It is bad input, so report 400 and name
-     * the values that are actually accepted.
-     */
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex, WebRequest request) {
         String message = "Malformed request body";
@@ -77,7 +73,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    /** A referenced row does not exist, or a unique/NOT NULL constraint was violated. */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, WebRequest request) {
         log.warn("Rejected by a database constraint: {}", ex.getMostSpecificCause().getMessage());
@@ -92,8 +87,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
-        // Log the detail; do NOT return it. ex.getMessage() on a JDBC failure contains the
-        // generated SQL and schema names, which should never reach a client.
         log.error("Unhandled exception", ex);
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
