@@ -19,8 +19,8 @@ public class CorsConfig { //no need to include cors in other services
 
         config.setAllowedOriginPatterns(List.of(
                 "http://localhost:[*]", //supporting any localhost to support clean fallback
-                "http://127.0.0.1:[*]",
-                "https://*.vercel.app" 
+                "http://127.0.0.1:[*]", //temporary testing // not needed as of now
+                "https://*.vercel.app" // was planned initially. removed due to time constraints
         ));
 
         config.setAllowedMethods(List.of(
@@ -30,16 +30,15 @@ public class CorsConfig { //no need to include cors in other services
         config.setAllowedHeaders(List.of(
                 "Authorization", //frontend can send JWT through this
                 "Content-Type", //JSOM
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"
+                "Accept", // cors
+                "Origin", // cors
+                "Access-Control-Request-Method", //for cors
+                "Access-Control-Request-Headers" //for cors
         ));
 
         config.setExposedHeaders(List.of( //frontend can read this
-                "X-RateLimit-Limit",
-                "X-RateLimit-Remaining",
+                "X-RateLimit-Limit", // removed 
+                "X-RateLimit-Remaining", // removed 
                 "Authorization"
         ));
 

@@ -14,7 +14,6 @@ import java.util.UUID;
 @Repository
 public interface OutageRepository extends JpaRepository<Outage, UUID> {
 
-    // No enum in the WHERE clause — a derived query is fine here.
     List<Outage> findAllByOrderByStartTimeDesc();
 
     List<Outage> findByStartTimeBetweenOrderByStartTimeDesc(LocalDateTime start, LocalDateTime end);
