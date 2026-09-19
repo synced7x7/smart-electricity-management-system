@@ -30,6 +30,7 @@ export default function Dashboard() {
     [area],
     { enabled: Boolean(userId) },
   )
+  
   const payments = useAsync(() => getHistory(userId), [userId], { enabled: Boolean(userId) })
   const unread = useAsync(() => getUnreadCount(userId), [userId], { enabled: Boolean(userId) })
 
@@ -41,8 +42,9 @@ export default function Dashboard() {
   const lastPayment = history.find((p) => p.status === 'SUCCESS')
   const now = new Date()
   const ranked = (outages.data || []).filter((o) => !o.endTime || new Date(o.endTime) > now)
-  
+  const items = (outages.data || []).filter((o) => !o.endTime || new Date(o.endTime) > now)
   const liveNow = ranked.filter((o) => o.status === 'ONGOING')
+  
 
   return (
     <div className="grid gap-6">
@@ -184,10 +186,10 @@ export default function Dashboard() {
           <div className="flex flex-1 flex-col justify-between gap-4 p-5">
             <div>
               <p className="tnum text-[1.75rem] leading-none font-semibold tracking-[-0.02em] text-ink">
-                {unread.loading ? '—' : (unread.data ?? 0)}
+                {unread.loading ? '—' : (items.length ?? 0)}
               </p>
               <p className="mt-2 text-[13.5px] text-muted">
-                {unread.data === 1 ? 'unread message' : 'unread messages'}
+                Upcoming Alerts
                 {liveNow.length > 0 && (
                   <>
                     {' · '}
