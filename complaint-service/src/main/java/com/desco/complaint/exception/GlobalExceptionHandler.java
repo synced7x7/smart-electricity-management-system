@@ -58,11 +58,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * An unknown enum label in a JSON body (e.g. {"status":"NONSENSE"}) otherwise falls
-     * through to the catch-all and reports 500. It is bad input, so report 400 and name
-     * the values that are actually accepted.
-     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex, WebRequest request) {
         String message = "Malformed request body";
@@ -79,7 +74,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    /** A referenced row does not exist, or a unique/NOT NULL constraint was violated. */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex, WebRequest request) {
         String unsupported = unsupportedEnumValue(ex);
@@ -112,8 +106,7 @@ public class GlobalExceptionHandler {
                     .timestamp(LocalDateTime.now())
                     .build(), HttpStatus.BAD_REQUEST);
         }
-        // Log the detail; do NOT return it. ex.getMessage() on a JDBC failure contains the
-        // generated SQL and schema names, which should never reach a client.
+   
         log.error("Unhandled exception", ex);
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -126,13 +119,7 @@ public class GlobalExceptionHandler {
     private static final Pattern INVALID_ENUM =
             Pattern.compile("invalid input value for enum (\\w+): \"([^\"]*)\"");
 
-    /**
-     * Non-null when the cause chain is Postgres rejecting an enum label it has
-     * never been told about (SQLSTATE 22P02). That happens when the application
-     * ships ahead of its migration: the Java enum knows all 64 districts, the
-     * database still only knows the 8 original DESCO zones. Without this the
-     * caller just gets an opaque 500.
-     */
+ 
     private static String unsupportedEnumValue(Throwable ex) {
         for (Throwable t = ex; t != null; t = t.getCause()) {
             if (t.getMessage() != null) {

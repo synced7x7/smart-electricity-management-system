@@ -22,9 +22,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                // CORS is handled once, at api-gateway — see CorsConfig there.
-                // A second Access-Control-Allow-Origin header from this service would
-                // make the browser reject the response with duplicate CORS headers.
+
                 .cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth

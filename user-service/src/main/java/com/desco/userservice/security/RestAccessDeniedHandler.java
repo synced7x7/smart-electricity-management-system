@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-/** Returns a JSON 403 body instead of an empty one for any future role-restricted endpoint. */
+
 @Component
 public class RestAccessDeniedHandler implements AccessDeniedHandler {
 

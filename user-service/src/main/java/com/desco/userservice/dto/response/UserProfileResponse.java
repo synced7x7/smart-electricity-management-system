@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/** Merges account fields (owned by auth-service) with profile fields (owned by this service). */
 @Data
 @Builder
 @NoArgsConstructor

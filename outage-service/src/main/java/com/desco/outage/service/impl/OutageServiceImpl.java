@@ -46,9 +46,6 @@ public class OutageServiceImpl implements OutageService {
                 .createdBy(createdBy)
                 .build();
 
-        // saveAndFlush (not save): @CreationTimestamp/@UpdateTimestamp values are only
-        // generated once the INSERT actually runs. A plain save() inside @Transactional
-        // defers it to commit, so the mapped response would carry null timestamps.
         Outage saved = outageRepository.saveAndFlush(outage);
         log.info("Created outage {} for area {}", saved.getId(), saved.getArea());
 
@@ -136,7 +133,6 @@ public class OutageServiceImpl implements OutageService {
         Outage updated = outageRepository.save(outage);
         log.info("Updated outage {} status to {}", updated.getId(), status);
 
-        // Notify area on status change
         String alertMessage = String.format("Outage in %s is now %s. Expected/Restored time: %s",
                 updated.getArea(), status, updated.getEndTime());
         notificationClient.sendOutageNotification(updated.getArea().name(), "Outage Status Update: " + updated.getTitle(), alertMessage, updated.getId());

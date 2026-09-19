@@ -18,13 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * auth-service's JWT carries only the subject (email) and userId — it does NOT include
- * a role claim. The caller's identity (and role, for the few endpoints that care) is
- * resolved from the database on each request, exactly as admin-service does. Resolving
- * the full User entity here also means controllers can use @AuthenticationPrincipal
- * User directly for "my own profile" endpoints instead of trusting a path variable.
- */
+
 @Slf4j
 @Component
 @RequiredArgsConstructor

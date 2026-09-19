@@ -10,9 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Printable receipt for a completed payment.
- */
+
 @Data
 @Builder
 @NoArgsConstructor

@@ -28,10 +28,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), "Duplicate Meter Number");
     }
 
-    /**
-     * Without this, a malformed URL such as /api/users/ produces a 500 from the
-     * catch-all handler instead of an honest 404.
-     */
+ 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException ex) {
         return build(HttpStatus.NOT_FOUND, "No endpoint found for this path", "Not Found");
@@ -57,11 +54,7 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), "Validation Error");
     }
 
-    /**
-     * A referenced row does not exist (e.g. a payment for a user id that is not in
-     * `users`). Since the foreign keys were added this surfaces here rather than
-     * silently writing an orphaned row — report it as a 400, not a 500.
-     */
+ 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
         String unsupported = unsupportedEnumValue(ex);
@@ -80,8 +73,6 @@ public class GlobalExceptionHandler {
         if (unsupported != null) {
             return build(HttpStatus.BAD_REQUEST, unsupported, "Validation Error");
         }
-        // Log the detail; do NOT return it. ex.getMessage() on a JDBC failure contains
-        // the generated SQL and schema names, which should never reach a client.
         log.error("Unhandled exception", ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", "Internal Server Error");
     }
@@ -93,13 +84,7 @@ public class GlobalExceptionHandler {
     private static final Pattern INVALID_ENUM =
             Pattern.compile("invalid input value for enum (\\w+): \"([^\"]*)\"");
 
-    /**
-     * Non-null when the cause chain is Postgres rejecting an enum label it has
-     * never been told about (SQLSTATE 22P02). That happens when the application
-     * ships ahead of its migration: the Java enum knows all 64 districts, the
-     * database still only knows the 8 original DESCO zones. Without this the
-     * caller just gets an opaque 500.
-     */
+   
     private static String unsupportedEnumValue(Throwable ex) {
         for (Throwable t = ex; t != null; t = t.getCause()) {
             if (t.getMessage() != null) {

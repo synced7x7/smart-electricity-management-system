@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 
-/**
- * Validates JWTs minted by auth-service. This service is a pure resource server:
- * it never issues tokens, it only verifies the shared HMAC signature.
- */
+
 @Slf4j
 @Service
 public class JwtService {

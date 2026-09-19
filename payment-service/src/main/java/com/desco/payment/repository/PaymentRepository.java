@@ -17,12 +17,7 @@ public interface PaymentRepository extends JpaRepository<Payment, UUID> {
 
     Optional<Payment> findByTransactionId(String transactionId);
 
-    /**
-     * Native query because "status" is a PostgreSQL enum: a derived query would bind
-     * the parameter as varchar and Postgres refuses `payment_status = character varying`.
-     * {@code @ColumnTransformer} only rewrites INSERT/UPDATE, never a WHERE clause,
-     * so the cast has to be spelled out here.
-     */
+    
     @Query(value = """
             SELECT EXISTS (
                 SELECT 1 FROM payments
